@@ -271,7 +271,7 @@
 
     <!-- PAGE 2: ANALYSIS & PALETTE -->
     <div class="page">
-        <h2 class="section-title">Color Metrics & Palette</h2>
+        <h2 class="section-title">Color Metrics & Optical Analysis</h2>
         
         <div class="metrics-grid">
             <div class="metric-cell">
@@ -282,7 +282,7 @@
             </div>
             <div class="metric-cell">
                 <div class="metric-card">
-                    <h4>Warmth Index</h4>
+                    <h4>Warmth Index (a*/b*)</h4>
                     <div class="val">{{ "%.2f"|format(metrics.warmth_score) }}</div>
                 </div>
             </div>
@@ -294,14 +294,21 @@
             </div>
             <div class="metric-cell">
                 <div class="metric-card">
-                    <h4>Overall Value</h4>
-                    <div class="val">{{ "%.2f"|format(metrics.overall_value) }}</div>
+                    <h4>Luminance L*</h4>
+                    <div class="val">{{ "%.1f"|format(skin_lab.L) }}</div>
                 </div>
             </div>
         </div>
 
+        <div class="guide-box" style="background: #F1F5F9; border-left: 4px solid {{ header_color }};">
+            <h4>Dermatological CIE L*a*b* & ITA° Formula Breakdown</h4>
+            <p><strong>CIE L*a*b* Coordinates:</strong> Lightness L* = {{ "%.1f"|format(skin_lab.L) }} | Red/Green a* = {{ "%.1f"|format(skin_lab.a) }} | Yellow/Blue b* = {{ "%.1f"|format(skin_lab.b) }}</p>
+            <p style="margin-top: 4px;"><strong>ITA° Typology Formula:</strong> <code>ITA° = arctan((L* - 50) / b*) × (180 / π)</code> ➔ <strong>{{ "%.1f"|format(metrics.ita_degrees) }}°</strong></p>
+            <p style="margin-top: 4px;"><strong>Dermatological Classification:</strong> {{ ita_category }}</p>
+        </div>
+
         <h3 style="font-size: 16px; color: {{ header_color }}; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
-            Your 12 Signature Colors
+            Your 12 Signature Colors & Swatches
         </h3>
         
         <div class="swatch-grid">
@@ -322,7 +329,7 @@
         </div>
 
         <div class="guide-box">
-            <h4>Recommended Metals & Jewelry</h4>
+            <h4>Recommended Metals & Jewelry Tones</h4>
             <p><strong>Best Metals:</strong> {{ jewelry }}</p>
         </div>
 
@@ -333,7 +340,7 @@
         </div>
 
         <div class="footer-page">
-            <span>Color Analysis Studio • {{ sub_season }}</span>
+            <span>CHROMATYPE Studio • {{ sub_season }}</span>
             <span>Page 2 of 3</span>
         </div>
     </div>
@@ -347,7 +354,7 @@
             <p>{{ makeup }}</p>
         </div>
 
-        <div style="margin-bottom: 25px;">
+        <div style="margin-bottom: 20px;">
             <h4 style="font-size: 14px; color: #E53E3E; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">
                 Colors to Avoid Near Your Face
             </h4>
@@ -358,9 +365,12 @@
             </div>
         </div>
 
-        <h2 class="section-title" style="margin-top: 20px;">The Science & History</h2>
+        <h2 class="section-title" style="margin-top: 20px;">Optical Color Science & History</h2>
         <p class="story-text">
-            Seasonal color analysis originated in the early 20th century, pioneered by Bauhaus master Johannes Itten. Itten observed that his art students naturally gravitated toward pigments matching their personal hair, eye, and skin tones. Today, our engine uses precise CIE L*a*b* color space transformations and Individual Typology Angle (ITA°) calculations to scientifically match your natural light reflection.
+            Human skin tone perception is governed by optical light absorption of cutaneous melanin (450nm wavelength) and sub-papillary hemoglobin (550nm wavelength). By mapping your high-resolution facial capture into 3D CIE L*a*b* color space, CHROMATYPE measures the exact light reflection off your skin surface.
+        </p>
+        <p class="story-text">
+            Pioneered by Bauhaus master Johannes Itten in the 1920s, seasonal color theory proves that when you wear garment pigments matching your natural spectral reflection, skin imperfections fade, natural eye luminance increases, and your overall visual harmony projects with effortless confidence.
         </p>
 
         <div class="mystic-card">
@@ -368,12 +378,12 @@
                 "Colors carry natural frequencies. When you surround yourself with the tones that match your natural resonance, your inner vitality projects outward with effortless harmony. Wear your true colors with confidence and grace."
             </div>
             <div class="mystic-footer">
-                • Color Analysis Vibrational Harmony •
+                • CHROMATYPE Vibrational Harmony •
             </div>
         </div>
 
         <div class="footer-page">
-            <span>Color Analysis Studio • All Rights Reserved</span>
+            <span>CHROMATYPE Studio • Confidential Report for {{ client_name }}</span>
             <span>Page 3 of 3</span>
         </div>
     </div>

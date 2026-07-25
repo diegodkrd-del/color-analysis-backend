@@ -356,12 +356,30 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
     else:
         abs_img_path = base64_img
     
+    ita_val = metrics.get('ita_degrees', 0.0)
+    if ita_val > 55.0:
+        ita_category = "Very Light (ITA° > 55°)"
+    elif ita_val > 41.0:
+        ita_category = "Light / Fair (ITA° 41° - 55°)"
+    elif ita_val > 28.0:
+        ita_category = "Intermediate (ITA° 28° - 41°)"
+    elif ita_val > 10.0:
+        ita_category = "Tan (ITA° 10° - 28°)"
+    elif ita_val > -30.0:
+        ita_category = "Brown / Dark (ITA° -30° - 10°)"
+    else:
+        ita_category = "Very Dark (ITA° < -30°)"
+
+    skin_lab_dict = metrics.get('skin_lab', {'L': 65.0, 'a': 12.0, 'b': 18.0})
+
     html_out = template.render(
         client_name=client_name,
         season=season,
         sub_season=sub_season,
         image_path=abs_img_path,
         metrics=metrics,
+        ita_category=ita_category,
+        skin_lab=skin_lab_dict,
         season_bg_color=palette_info["bg"],
         accent_color=palette_info["accent"],
         header_color=palette_info["header_color"],
