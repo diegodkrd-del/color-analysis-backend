@@ -248,9 +248,10 @@
 
     <!-- PAGE 1: COVER -->
     <div class="page cover-page">
-        <div class="header-brand">Personal Color Analysis • Pro Report</div>
+        <div class="header-brand">CHROMATYPE • Personal Color Analysis Dossier</div>
         <h1 class="cover-title">{{ season }}</h1>
         <div class="cover-subtitle">Dossier: {{ sub_season }}</div>
+        <div style="font-size: 16px; font-weight: 600; color: {{ header_color }}; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px;">Prepared Exclusively for: {{ client_name }}</div>
         
         <div class="photo-container">
             <img src="{{ image_path }}" alt="Client Photo">
@@ -259,7 +260,7 @@
         <div class="badge">{{ sub_season }}</div>
         
         <p class="cover-desc">
-            Welcome to your customized Personal Color Analysis. Based on your dermatological skin undertone (ITA°), natural contrast, and facial pigmentation, you harmoniously align with the <strong>{{ sub_season }}</strong> palette. Explore your optimal colors, jewelry tones, makeup recommendations, and style resonance inside.
+            Dear {{ client_name }}, welcome to your customized Personal Color Analysis. Based on your dermatological skin undertone (ITA°), natural contrast, and facial pigmentation, you harmoniously align with the <strong>{{ sub_season }}</strong> palette. Explore your optimal colors, jewelry tones, makeup recommendations, and style resonance inside.
         </p>
 
         <div class="footer-page">

@@ -315,7 +315,7 @@ def get_palette_data(season: str, sub_season: str) -> dict:
     else:
         return SUBSEASON_PALETTES["Warm Spring"]
 
-def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str) -> str:
+def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, client_name: str = "Valued Client") -> str:
     """
     Generates a multi-page PDF report based on the color analysis data.
     If WeasyPrint is unavailable (e.g. on Windows without GTK3), it saves an HTML file instead.
@@ -328,6 +328,10 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str) -> 
     
     palette_info = get_palette_data(season, sub_season)
     
+    out_dir = os.path.dirname(output_pdf_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     env = Environment(loader=FileSystemLoader(os.path.join(current_dir, 'templates')))
     template = env.get_template('report.html')
@@ -335,6 +339,7 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str) -> 
     abs_img_path = f"file:///{os.path.abspath(image_path).replace(chr(92), '/')}"
     
     html_out = template.render(
+        client_name=client_name,
         season=season,
         sub_season=sub_season,
         image_path=abs_img_path,
