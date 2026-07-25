@@ -384,9 +384,35 @@
 
         <div class="footer-page">
             <span>CHROMATYPE Studio • Confidential Report for {{ client_name }}</span>
-            <span>Page 3 of 3</span>
+            <span>Page 3 of {{ palette|length + 3 }}</span>
         </div>
     </div>
+
+    <!-- PAGES 4 TO 15: VIRTUAL COLOR DRAPING PAGES (ONE PER PALETTE COLOR) -->
+    {% for color in palette %}
+    <div class="page" style="background-color: {{ color.hex }}; color: #FFFFFF; padding: 40px 30px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center;">
+        <div style="background: rgba(0,0,0,0.65); padding: 14px 28px; border-radius: 30px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.2);">
+            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: #CBD5E1;">CHROMATYPE Virtual Drape • Swatch {{ loop.index }} of {{ palette|length }}</div>
+            <h2 style="font-size: 26px; margin: 2px 0 0 0; text-transform: uppercase; letter-spacing: 1px; color: #FFFFFF;">{{ color.name }}</h2>
+            <div style="font-size: 13px; opacity: 0.95; font-weight: 700; letter-spacing: 2px; color: #F1F5F9;">HEX CODE: {{ color.hex }}</div>
+        </div>
+
+        <div style="width: 280px; height: 350px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 6px solid #FFFFFF; box-shadow: 0 20px 40px rgba(0,0,0,0.35); bg-color: transparent;">
+            <img src="{{ image_path }}" style="width: 100%; height: 100%; object-fit: contain; object-position: center bottom;" alt="{{ color.name }} Drape">
+        </div>
+
+        <div style="background: rgba(0,0,0,0.65); padding: 14px 22px; border-radius: 12px; max-width: 500px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.2);">
+            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #F8FAFC;">
+                <strong>Virtual Color Harmony:</strong> Wearing <strong>{{ color.name }}</strong> near your face softens shadows and highlights your natural <strong>{{ sub_season }}</strong> glow. Best used for tops, blazers, scarves, and accessories.
+            </p>
+        </div>
+
+        <div class="footer-page" style="border-top: 1px solid rgba(255,255,255,0.3); color: #F1F5F9;">
+            <span>CHROMATYPE Studio • Draping Swatch {{ loop.index }}</span>
+            <span>Page {{ loop.index + 3 }} of {{ palette|length + 3 }}</span>
+        </div>
+    </div>
+    {% endfor %}
 
 </body>
 </html>

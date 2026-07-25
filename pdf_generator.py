@@ -328,11 +328,33 @@ def get_base64_image(image_path: str) -> str:
         encoded = base64.b64encode(f.read()).decode("utf-8")
     return f"data:{mime_type};base64,{encoded}"
 
+from PIL import Image, ImageOps
+
+def ensure_upright_image(image_path: str) -> str:
+    """Corrects EXIF orientation so the client face is always standing upright."""
+    if not os.path.exists(image_path):
+        return image_path
+    try:
+        img = Image.open(image_path)
+        img = ImageOps.exif_transpose(img)
+        out_dir = os.path.dirname(os.path.abspath(image_path))
+        upright_path = os.path.join(out_dir, "_upright_" + os.path.basename(image_path))
+        if not upright_path.lower().endswith((".png", ".jpg", ".jpeg")):
+            upright_path += ".png"
+        img.save(upright_path)
+        return upright_path
+    except Exception as e:
+        print(f"Orientation fix note: {e}")
+        return image_path
+
 def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, client_name: str = "Valued Client") -> str:
     """
     Generates a multi-page PDF report based on the color analysis data.
     Uses Microsoft Edge Headless or WeasyPrint for pixel-perfect PDF output.
     """
+    # Ensure client photo is upright
+    image_path = ensure_upright_image(image_path)
+    
     season = analysis_data.get('season', 'Spring') or 'Spring'
     sub_season = analysis_data.get('sub_season', season) or season
     metrics = analysis_data.get('color_metrics', {
