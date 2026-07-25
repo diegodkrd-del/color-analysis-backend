@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import threading
 import subprocess
 import traceback
@@ -12,12 +13,32 @@ from color_analyzer_v2 import analyze_photo
 from pdf_generator import generate_pdf, SUBSEASON_PALETTES
 from email_service import send_pdf_email
 
+CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
+
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"sender_email": "dkvendemais@gmail.com", "sender_pass": ""}
+
+def save_config(cfg):
+    try:
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2)
+    except Exception as e:
+        print(f"Error saving config: {e}")
+
 class ChromatypeStudioApp:
     def __init__(self, root):
         self.root = root
         self.root.title("CHROMATYPE Studio — Professional Color Analysis Generator")
-        self.root.geometry("640x720")
+        self.root.geometry("640x780")
         self.root.resizable(True, True)
+        
+        self.config = load_config()
         
         # Style
         self.style = ttk.Style()
@@ -63,7 +84,7 @@ class ChromatypeStudioApp:
         self.name_entry.insert(0, "Diego Kasper")
         
         # 2. Client Email
-        ttk.Label(form_frame, text="Client Email Address (Optional):", font=("Helvetica", 10, "bold")).grid(row=2, column=0, sticky="w", pady=2)
+        ttk.Label(form_frame, text="Client Email Address (For Delivery):", font=("Helvetica", 10, "bold")).grid(row=2, column=0, sticky="w", pady=2)
         self.email_entry = ttk.Entry(form_frame, width=45, font=("Helvetica", 10))
         self.email_entry.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(0, 10))
         self.email_entry.insert(0, "dkvendemais@gmail.com")
@@ -97,23 +118,39 @@ class ChromatypeStudioApp:
         # Options Checkboxes
         self.open_pdf_var = tk.BooleanVar(value=True)
         self.remove_bg_var = tk.BooleanVar(value=True)
-        self.send_email_var = tk.BooleanVar(value=False)
+        self.send_email_var = tk.BooleanVar(value=True)
         
         chk_frame = ttk.Frame(form_frame)
         chk_frame.grid(row=9, column=0, columnspan=2, pady=5, sticky="w")
         
         ttk.Checkbutton(chk_frame, text="Open PDF automatically after generation", variable=self.open_pdf_var).pack(anchor="w")
         ttk.Checkbutton(chk_frame, text="Attempt AI Background Cutout (RemBG)", variable=self.remove_bg_var).pack(anchor="w")
-        ttk.Checkbutton(chk_frame, text="Send PDF via Email automatically (Requires SMTP credentials)", variable=self.send_email_var).pack(anchor="w")
+        ttk.Checkbutton(chk_frame, text="Send PDF via Email automatically to client", variable=self.send_email_var).pack(anchor="w")
+        
+        # 5. SMTP Sender Settings Panel
+        smtp_labelframe = ttk.LabelFrame(form_frame, text="⚙️ Email Delivery Settings (Gmail / SMTP)", padding="10")
+        smtp_labelframe.grid(row=10, column=0, columnspan=2, sticky="ew", pady=10)
+        
+        ttk.Label(smtp_labelframe, text="Sender Gmail Address:", font=("Helvetica", 9, "bold")).grid(row=0, column=0, sticky="w")
+        self.sender_email_entry = ttk.Entry(smtp_labelframe, width=35, font=("Helvetica", 9))
+        self.sender_email_entry.grid(row=0, column=1, sticky="w", padx=5, pady=2)
+        self.sender_email_entry.insert(0, self.config.get("sender_email", "dkvendemais@gmail.com"))
+        
+        ttk.Label(smtp_labelframe, text="Gmail App Password (16-char):", font=("Helvetica", 9, "bold")).grid(row=1, column=0, sticky="w")
+        self.sender_pass_entry = ttk.Entry(smtp_labelframe, width=35, font=("Helvetica", 9), show="*")
+        self.sender_pass_entry.grid(row=1, column=1, sticky="w", padx=5, pady=2)
+        self.sender_pass_entry.insert(0, self.config.get("sender_pass", ""))
+        
+        ttk.Label(smtp_labelframe, text="Need App Password? Generate one in Google Account -> Security -> App Passwords", font=("Helvetica", 8, "italic"), foreground="#6B7280").grid(row=2, column=0, columnspan=2, sticky="w", pady=(2, 0))
         
         # Status Bar & Progress
         self.progress_bar = ttk.Progressbar(form_frame, mode="indeterminate")
-        self.progress_bar.grid(row=10, column=0, columnspan=2, sticky="ew", pady=(10, 2))
+        self.progress_bar.grid(row=11, column=0, columnspan=2, sticky="ew", pady=(10, 2))
         
         self.status_label = ttk.Label(form_frame, text="Ready", font=("Helvetica", 10, "bold"), foreground="#10B981")
-        self.status_label.grid(row=11, column=0, columnspan=2, pady=(0, 10))
+        self.status_label.grid(row=12, column=0, columnspan=2, pady=(0, 10))
         
-        # Big Generate Button (Prominently Placed Inside Form)
+        # Big Generate Button
         self.generate_btn = tk.Button(
             form_frame, 
             text="✨ GENERATE COLOR DOSSIER PDF", 
@@ -126,7 +163,7 @@ class ChromatypeStudioApp:
             pady=12,
             command=self.start_generation
         )
-        self.generate_btn.grid(row=12, column=0, columnspan=2, sticky="ew", pady=(5, 15))
+        self.generate_btn.grid(row=13, column=0, columnspan=2, sticky="ew", pady=(5, 15))
 
     def browse_photo(self):
         file_path = filedialog.askopenfilename(
@@ -156,6 +193,12 @@ class ChromatypeStudioApp:
         client_email = self.email_entry.get().strip()
         selected_season = self.season_var.get()
         
+        sender_email = self.sender_email_entry.get().strip()
+        sender_pass = self.sender_pass_entry.get().strip()
+        
+        # Save credentials to config
+        save_config({"sender_email": sender_email, "sender_pass": sender_pass})
+        
         self.generate_btn.config(state="disabled")
         self.browse_btn.config(state="disabled")
         self.progress_bar.start(10)
@@ -163,11 +206,11 @@ class ChromatypeStudioApp:
         
         threading.Thread(
             target=self.run_pipeline,
-            args=(self.selected_photo_path, client_name, client_email, selected_season),
+            args=(self.selected_photo_path, client_name, client_email, selected_season, sender_email, sender_pass),
             daemon=True
         ).start()
 
-    def run_pipeline(self, image_path, client_name, client_email, selected_season):
+    def run_pipeline(self, image_path, client_name, client_email, selected_season, sender_email, sender_pass):
         try:
             # 1. Analyze colors
             self.update_status("1/3 Analyzing skin tone & color metrics...")
@@ -213,16 +256,16 @@ class ChromatypeStudioApp:
                 try: os.remove(cutout_path)
                 except: pass
 
-            # 4. Optional Email
+            # 4. Optional Email Delivery
             email_status_msg = ""
             if self.send_email_var.get() and client_email:
-                self.update_status("Sending email to client...")
+                self.update_status("Sending email with PDF attachment to client...")
                 try:
-                    sent_ok = send_pdf_email(client_email, generated_path)
-                    if not sent_ok:
-                        email_status_msg = "\n(Note: Email delivery failed. Please check SMTP settings)."
+                    sent_ok = send_pdf_email(client_email, generated_path, smtp_user=sender_email, smtp_pass=sender_pass)
+                    if sent_ok:
+                        email_status_msg = f"\n\n✉️ Email successfully sent to {client_email}!"
                 except Exception as mail_err:
-                    email_status_msg = f"\n(Note: Email skipped: {mail_err})"
+                    email_status_msg = f"\n\n⚠️ Could not send email: {mail_err}\n(Tip: Enter your 16-character Gmail App Password in Email Settings)."
 
             self.root.after(0, self.on_success, generated_path, email_status_msg)
         except Exception as e:
