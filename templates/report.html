@@ -436,15 +436,31 @@
             </div>
         </div>
 
-        <h2 class="section-title" style="margin-top: 20px;">Optical Color Science & History</h2>
-        <p class="story-text">
-            Human skin tone perception is governed by optical light absorption of cutaneous melanin (450nm wavelength) and sub-papillary hemoglobin (550nm wavelength). By mapping your high-resolution facial capture into 3D CIE L*a*b* color space, CHROMATYPE measures the exact light reflection off your skin surface.
-        </p>
-        <p class="story-text">
-            Pioneered by Bauhaus master Johannes Itten in the 1920s, seasonal color theory proves that when you wear garment pigments matching your natural spectral reflection, skin imperfections fade, natural eye luminance increases, and your overall visual harmony projects with effortless confidence.
-        </p>
+        <h2 class="section-title" style="margin-top: 15px;">CIELAB (L*a*b*) Optical Science & Derivation</h2>
+        
+        <div class="guide-box" style="background: #F8FAFC; border-left: 4px solid {{ header_color }}; text-align: left; padding: 12px 16px; margin-bottom: 15px;">
+            <p style="margin: 0 0 6px 0; font-size: 12px; line-height: 1.4;"><strong>The CIELAB 3D Model:</strong> Defined by the International Commission on Illumination (CIE) in 1976 to map color based on human visual perception.</p>
+            
+            <ul style="margin: 4px 0 8px 0; padding-left: 18px; font-size: 11px; line-height: 1.5; color: #334155;">
+                <li><strong>L* (Lightness):</strong> 0 (pure black) to 100 (ideal white). Matches perceived brightness.</li>
+                <li><strong>a* axis (Green/Red):</strong> Negative values = green; positive values = red/magenta.</li>
+                <li><strong>b* axis (Blue/Yellow):</strong> Negative values = blue; positive values = yellow.</li>
+                <li><strong>Center Point (a* = 0, b* = 0):</strong> Represents completely neutral grey, black, or white.</li>
+            </ul>
+            
+            <p style="margin: 4px 0 2px 0; font-size: 11px; font-weight: bold; color: {{ header_color }};">Why CIELAB Matters in Optical Science:</p>
+            <ul style="margin: 2px 0 8px 0; padding-left: 18px; font-size: 11px; line-height: 1.5; color: #334155;">
+                <li><strong>Device Independence:</strong> Absolute color independent of screens, printers, or camera sensor profiles.</li>
+                <li><strong>Perceptual Uniformity:</strong> Distance in space matches perceived visual change.</li>
+                <li><strong>ΔE (Delta E):</strong> Quantifies visual difference (\(\Delta E^*_{ab}\)). A \(\Delta E \approx 1.0\) represents a Just Noticeable Difference (JND).</li>
+            </ul>
 
-        <div class="mystic-card">
+            <div style="font-size: 10px; font-family: monospace; background: #E2E8F0; padding: 6px 8px; border-radius: 6px; color: #0F172A; text-align: center;">
+                L* = 116·f(Y/Yn) - 16 &nbsp;|&nbsp; a* = 500·[f(X/Xn) - f(Y/Yn)] &nbsp;|&nbsp; b* = 200·[f(Y/Yn) - f(Z/Zn)]
+            </div>
+        </div>
+
+        <div class="mystic-card" style="margin-top: 10px;">
             <div class="mystic-quote">
                 "Colors carry natural frequencies. When you surround yourself with the tones that match your natural resonance, your inner vitality projects outward with effortless harmony. Wear your true colors with confidence and grace."
             </div>
