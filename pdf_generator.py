@@ -529,7 +529,8 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
         contrast=palette_info["contrast"],
         neutrals=palette_info["neutrals"],
         avoid_colors=palette_info["avoid"],
-        palette=palette_info["colors"]
+        palette=palette_info["colors"],
+        all_subseasons=SUBSEASON_PALETTES
     )
     
     # 1. Try Microsoft Edge Headless PDF rendering on Windows (Pixel Perfect)
