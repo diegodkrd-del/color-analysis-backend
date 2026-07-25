@@ -1,5 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 import os
+import subprocess
+import base64
 
 SUBSEASON_PALETTES = {
     # SPRING SUBSEASONS
@@ -315,10 +317,21 @@ def get_palette_data(season: str, sub_season: str) -> dict:
     else:
         return SUBSEASON_PALETTES["Warm Spring"]
 
+import base64
+
+def get_base64_image(image_path: str) -> str:
+    """Encodes an image file as a base64 data URI for reliable PDF rendering."""
+    if not os.path.exists(image_path):
+        return ""
+    mime_type = "image/png" if image_path.lower().endswith(".png") else "image/jpeg"
+    with open(image_path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode("utf-8")
+    return f"data:{mime_type};base64,{encoded}"
+
 def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, client_name: str = "Valued Client") -> str:
     """
     Generates a multi-page PDF report based on the color analysis data.
-    If WeasyPrint is unavailable (e.g. on Windows without GTK3), it saves an HTML file instead.
+    Uses Microsoft Edge Headless or WeasyPrint for pixel-perfect PDF output.
     """
     season = analysis_data.get('season', 'Spring') or 'Spring'
     sub_season = analysis_data.get('sub_season', season) or season
@@ -336,7 +349,12 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
     env = Environment(loader=FileSystemLoader(os.path.join(current_dir, 'templates')))
     template = env.get_template('report.html')
     
-    abs_img_path = f"file:///{os.path.abspath(image_path).replace(chr(92), '/')}"
+    # Base64 encode image for 100% reliable PDF embedding
+    base64_img = get_base64_image(image_path)
+    if not base64_img:
+        abs_img_path = f"file:///{os.path.abspath(image_path).replace(chr(92), '/')}"
+    else:
+        abs_img_path = base64_img
     
     html_out = template.render(
         client_name=client_name,
@@ -355,17 +373,48 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
         palette=palette_info["colors"]
     )
     
+    # 1. Try Microsoft Edge Headless PDF rendering on Windows (Pixel Perfect)
+    edge_path = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+    if not os.path.exists(edge_path):
+        edge_path = r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
+        
+    if os.path.exists(edge_path):
+        try:
+            temp_html = output_pdf_path.replace(".pdf", "_temp.html")
+            with open(temp_html, "w", encoding="utf-8") as f:
+                f.write(html_out)
+                
+            html_url = "file:///" + os.path.abspath(temp_html).replace("\\", "/")
+            cmd = [
+                edge_path,
+                "--headless=new",
+                f"--print-to-pdf={output_pdf_path}",
+                "--no-pdf-header-footer",
+                "--print-to-pdf-no-header",
+                html_url
+            ]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+            if os.path.exists(temp_html):
+                try: os.remove(temp_html)
+                except: pass
+                
+            if os.path.exists(output_pdf_path) and os.path.getsize(output_pdf_path) > 1000:
+                print(f"Generated pixel-perfect PDF via Headless Edge: {output_pdf_path}")
+                return output_pdf_path
+        except Exception as edge_err:
+            print(f"Headless Edge PDF fallback error: {edge_err}")
+
+    # 2. Try WeasyPrint
     try:
         from weasyprint import HTML
         HTML(string=html_out, base_url=current_dir).write_pdf(output_pdf_path)
-        print(f"Generated PDF report at: {output_pdf_path}")
+        print(f"Generated PDF report via WeasyPrint at: {output_pdf_path}")
         return output_pdf_path
     except Exception as e:
-        # Fallback for Windows testing if GTK3 isn't installed
-        print("WeasyPrint not available on this OS, saving as HTML instead.")
+        # 3. Fallback to HTML
+        print("Saving HTML report fallback.")
         html_path = output_pdf_path.replace(".pdf", ".html")
         with open(html_path, "w", encoding="utf-8") as f:
-            f.write(html_out.replace(abs_img_path, os.path.abspath(image_path)))
-        print(f"Generated HTML report fallback at: {html_path}")
+            f.write(html_out)
         return html_path
 
