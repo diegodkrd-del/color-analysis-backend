@@ -116,7 +116,7 @@ class ChromatypeStudioApp:
         # Big Generate Button (Prominently Placed Inside Form)
         self.generate_btn = tk.Button(
             form_frame, 
-            text="✨ GENERATE 3-PAGE PDF REPORT", 
+            text="✨ GENERATE COLOR DOSSIER PDF", 
             font=("Helvetica", 12, "bold"),
             bg="#10B981", 
             fg="#FFFFFF", 
@@ -200,7 +200,7 @@ class ChromatypeStudioApp:
                     cutout_path = image_path
 
             # 3. Generate PDF
-            self.update_status("3/3 Rendering 3-Page PDF Dossier...")
+            self.update_status("3/3 Rendering Color Dossier PDF...")
             safe_name = "".join(c for c in client_name if c.isalnum() or c in (' ', '_')).rstrip()
             safe_name = safe_name.replace(' ', '_')
             output_filename = f"CHROMATYPE_Report_{safe_name}.pdf"
