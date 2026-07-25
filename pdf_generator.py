@@ -403,6 +403,16 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
     # 2. Crop tightly to face & hair (removing shoulders/neck/clothing)
     image_path = crop_face_only(image_path)
     
+    # 3. Ensure 100% transparent background cutout
+    try:
+        from background_remover import remove_background
+        temp_cutout = output_pdf_path.replace('.pdf', '_bg_cutout.png')
+        remove_background(image_path, temp_cutout)
+        if os.path.exists(temp_cutout) and os.path.getsize(temp_cutout) > 1000:
+            image_path = temp_cutout
+    except Exception as bg_err:
+        print(f"Background removal note: {bg_err}")
+    
     season = analysis_data.get('season', 'Spring') or 'Spring'
     sub_season = analysis_data.get('sub_season', season) or season
     metrics = analysis_data.get('color_metrics', {
