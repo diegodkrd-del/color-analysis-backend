@@ -16,8 +16,8 @@ class ChromatypeStudioApp:
     def __init__(self, root):
         self.root = root
         self.root.title("CHROMATYPE Studio — Professional Color Analysis Generator")
-        self.root.geometry("640x740")
-        self.root.resizable(False, False)
+        self.root.geometry("640x720")
+        self.root.resizable(True, True)
         
         # Style
         self.style = ttk.Style()
@@ -31,44 +31,56 @@ class ChromatypeStudioApp:
 
     def create_widgets(self):
         # Header Frame
-        header = tk.Frame(self.root, bg="#111827", height=80)
+        header = tk.Frame(self.root, bg="#111827", height=65)
         header.pack(fill="x")
         
-        title_label = tk.Label(header, text="CHROMATYPE STUDIO", font=("Helvetica", 20, "bold"), fg="#FFFFFF", bg="#111827")
-        title_label.pack(pady=(15, 2))
+        title_label = tk.Label(header, text="CHROMATYPE STUDIO", font=("Helvetica", 18, "bold"), fg="#FFFFFF", bg="#111827")
+        title_label.pack(pady=(10, 2))
         
-        subtitle_label = tk.Label(header, text="Desktop Manual & Auto PDF Report Generator", font=("Helvetica", 10), fg="#9CA3AF", bg="#111827")
-        subtitle_label.pack(pady=(0, 15))
+        subtitle_label = tk.Label(header, text="Desktop Manual & Auto PDF Report Generator", font=("Helvetica", 9), fg="#9CA3AF", bg="#111827")
+        subtitle_label.pack(pady=(0, 10))
         
-        # Main Form Container
-        form_frame = ttk.Frame(self.root, padding="20")
-        form_frame.pack(fill="both", expand=True)
+        # Scrollable Canvas Container
+        canvas = tk.Canvas(self.root, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(self.root, orient="vertical", command=canvas.yview)
+        
+        form_frame = ttk.Frame(canvas, padding="15")
+        form_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=form_frame, anchor="nw", width=620)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
         
         # 1. Client Name
-        ttk.Label(form_frame, text="Client Full Name:", font=("Helvetica", 11, "bold")).grid(row=0, column=0, sticky="w", pady=5)
-        self.name_entry = ttk.Entry(form_frame, width=45, font=("Helvetica", 11))
-        self.name_entry.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(0, 15))
-        self.name_entry.insert(0, "Jane Doe")
+        ttk.Label(form_frame, text="Client Full Name:", font=("Helvetica", 10, "bold")).grid(row=0, column=0, sticky="w", pady=2)
+        self.name_entry = ttk.Entry(form_frame, width=45, font=("Helvetica", 10))
+        self.name_entry.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+        self.name_entry.insert(0, "Diego Kasper")
         
-        # 2. Client Email (Optional for sending)
-        ttk.Label(form_frame, text="Client Email Address (Optional):", font=("Helvetica", 11, "bold")).grid(row=2, column=0, sticky="w", pady=5)
-        self.email_entry = ttk.Entry(form_frame, width=45, font=("Helvetica", 11))
-        self.email_entry.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(0, 15))
-        self.email_entry.insert(0, "client@example.com")
+        # 2. Client Email
+        ttk.Label(form_frame, text="Client Email Address (Optional):", font=("Helvetica", 10, "bold")).grid(row=2, column=0, sticky="w", pady=2)
+        self.email_entry = ttk.Entry(form_frame, width=45, font=("Helvetica", 10))
+        self.email_entry.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+        self.email_entry.insert(0, "dkvendemais@gmail.com")
         
-        # 3. Season Selection (Auto or Manual Override)
-        ttk.Label(form_frame, text="Seasonal Sub-Palette:", font=("Helvetica", 11, "bold")).grid(row=4, column=0, sticky="w", pady=5)
+        # 3. Season Selection
+        ttk.Label(form_frame, text="Seasonal Sub-Palette:", font=("Helvetica", 10, "bold")).grid(row=4, column=0, sticky="w", pady=2)
         
         season_options = ["Auto-Detect (AI Algorithm)"] + list(SUBSEASON_PALETTES.keys())
         self.season_var = tk.StringVar(value=season_options[0])
         self.season_combo = ttk.Combobox(form_frame, textvariable=self.season_var, values=season_options, state="readonly", font=("Helvetica", 10))
-        self.season_combo.grid(row=5, column=0, columnspan=2, sticky="ew", pady=(0, 15))
+        self.season_combo.grid(row=5, column=0, columnspan=2, sticky="ew", pady=(0, 10))
         
         # 4. Photo Selection
-        ttk.Label(form_frame, text="Client Portrait Photo:", font=("Helvetica", 11, "bold")).grid(row=6, column=0, sticky="w", pady=5)
+        ttk.Label(form_frame, text="Client Portrait Photo:", font=("Helvetica", 10, "bold")).grid(row=6, column=0, sticky="w", pady=2)
         
         photo_btn_frame = ttk.Frame(form_frame)
-        photo_btn_frame.grid(row=7, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+        photo_btn_frame.grid(row=7, column=0, columnspan=2, sticky="ew", pady=(0, 5))
         
         self.browse_btn = ttk.Button(photo_btn_frame, text="📁 Choose Photo File...", command=self.browse_photo)
         self.browse_btn.pack(side="left", padx=(0, 10))
@@ -77,18 +89,18 @@ class ChromatypeStudioApp:
         self.photo_label.pack(side="left")
         
         # Thumbnail Preview Frame
-        self.preview_frame = tk.Frame(form_frame, width=120, height=120, bg="#F3F4F6", highlightbackground="#D1D5DB", highlightthickness=1)
+        self.preview_frame = tk.Frame(form_frame, width=90, height=90, bg="#F3F4F6", highlightbackground="#D1D5DB", highlightthickness=1)
         self.preview_frame.grid(row=8, column=0, columnspan=2, pady=5)
         self.preview_label = tk.Label(self.preview_frame, text="Preview", bg="#F3F4F6", fg="#9CA3AF")
         self.preview_label.pack(expand=True)
         
-        # Options
+        # Options Checkboxes
         self.open_pdf_var = tk.BooleanVar(value=True)
         self.remove_bg_var = tk.BooleanVar(value=True)
         self.send_email_var = tk.BooleanVar(value=False)
         
         chk_frame = ttk.Frame(form_frame)
-        chk_frame.grid(row=9, column=0, columnspan=2, pady=10, sticky="w")
+        chk_frame.grid(row=9, column=0, columnspan=2, pady=5, sticky="w")
         
         ttk.Checkbutton(chk_frame, text="Open PDF automatically after generation", variable=self.open_pdf_var).pack(anchor="w")
         ttk.Checkbutton(chk_frame, text="Attempt AI Background Cutout (RemBG)", variable=self.remove_bg_var).pack(anchor="w")
@@ -96,14 +108,14 @@ class ChromatypeStudioApp:
         
         # Status Bar & Progress
         self.progress_bar = ttk.Progressbar(form_frame, mode="indeterminate")
-        self.progress_bar.grid(row=10, column=0, columnspan=2, sticky="ew", pady=(15, 5))
+        self.progress_bar.grid(row=10, column=0, columnspan=2, sticky="ew", pady=(10, 2))
         
         self.status_label = ttk.Label(form_frame, text="Ready", font=("Helvetica", 10, "bold"), foreground="#10B981")
-        self.status_label.grid(row=11, column=0, columnspan=2)
+        self.status_label.grid(row=11, column=0, columnspan=2, pady=(0, 10))
         
-        # Big Generate Button
+        # Big Generate Button (Prominently Placed Inside Form)
         self.generate_btn = tk.Button(
-            self.root, 
+            form_frame, 
             text="✨ GENERATE 3-PAGE PDF REPORT", 
             font=("Helvetica", 12, "bold"),
             bg="#10B981", 
@@ -111,10 +123,10 @@ class ChromatypeStudioApp:
             activebackground="#059669",
             activeforeground="#FFFFFF",
             relief="flat",
-            padding=12,
+            pady=12,
             command=self.start_generation
         )
-        self.generate_btn.pack(fill="x", padx=20, pady=(0, 20))
+        self.generate_btn.grid(row=12, column=0, columnspan=2, sticky="ew", pady=(5, 15))
 
     def browse_photo(self):
         file_path = filedialog.askopenfilename(
@@ -129,7 +141,7 @@ class ChromatypeStudioApp:
     def show_preview(self, path):
         try:
             img = Image.open(path)
-            img.thumbnail((110, 110))
+            img.thumbnail((80, 80))
             self.tk_img = ImageTk.PhotoImage(img)
             self.preview_label.config(image=self.tk_img, text="")
         except Exception:
