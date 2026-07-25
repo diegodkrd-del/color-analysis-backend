@@ -559,6 +559,10 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
                 
             if os.path.exists(output_pdf_path) and os.path.getsize(output_pdf_path) > 1000:
                 print(f"Generated pixel-perfect PDF via Headless Edge: {output_pdf_path}")
+                # Clean up temporary cutouts
+                if image_path and os.path.exists(image_path) and "_bg_cutout" in image_path:
+                    try: os.remove(image_path)
+                    except: pass
                 return output_pdf_path
         except Exception as edge_err:
             print(f"Headless Edge PDF fallback error: {edge_err}")
