@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+env/
+venv/
+*.html
+!templates/*.html
+*.pdf
+test_cutout.png
+.pytest_cache/

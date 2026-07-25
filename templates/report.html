@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personal Color Analysis Report - {{ sub_season }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #2D3748;
+            background-color: #FFFFFF;
+            -webkit-print-color-adjust: exact;
+        }
+        .page {
+            width: 210mm;
+            height: 297mm;
+            page-break-after: always;
+            box-sizing: border-box;
+            padding: 35px 40px;
+            position: relative;
+            background-color: #FFFFFF;
+            overflow: hidden;
+        }
+        .cover-page {
+            background: linear-gradient(135deg, {{ season_bg_color }} 0%, #FFFFFF 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 50px 40px;
+        }
+        .header-brand {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: {{ header_color }};
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .cover-title {
+            font-size: 42px;
+            font-weight: 800;
+            color: {{ header_color }};
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .cover-subtitle {
+            font-size: 22px;
+            font-weight: 300;
+            color: #4A5568;
+            margin: 0 0 35px 0;
+            letter-spacing: 1px;
+        }
+        .photo-container {
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 6px solid #FFFFFF;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            margin: 0 auto 35px auto;
+            background-color: {{ season_bg_color }};
+        }
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .badge {
+            display: inline-block;
+            padding: 8px 24px;
+            background-color: {{ accent_color }};
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+        .cover-desc {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #4A5568;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: {{ header_color }};
+            border-bottom: 2px solid {{ accent_color }};
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .metrics-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .metric-cell {
+            display: table-cell;
+            width: 25%;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        .metric-card {
+            background: #F7FAFC;
+            padding: 16px 12px;
+            border-radius: 10px;
+            border-top: 4px solid {{ accent_color }};
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .metric-card h4 {
+            margin: 0 0 6px 0;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #718096;
+            letter-spacing: 1px;
+        }
+        .metric-card .val {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #2D3748;
+        }
+        .swatch-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        .swatch-row {
+            display: table-row;
+        }
+        .swatch-cell {
+            display: table-cell;
+            width: 25%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .swatch-box {
+            border-radius: 8px;
+            padding: 12px 10px;
+            height: 65px;
+            color: #FFFFFF;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .swatch-name {
+            font-size: 11px;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            margin: 0;
+        }
+        .swatch-hex {
+            font-size: 9px;
+            opacity: 0.95;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            margin: 2px 0 0 0;
+            text-transform: uppercase;
+        }
+        .guide-box {
+            background: #F8FAFC;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid {{ accent_color }};
+        }
+        .guide-box h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: {{ header_color }};
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .guide-box p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #4A5568;
+        }
+        .avoid-tag {
+            display: inline-block;
+            background-color: #FFF5F5;
+            color: #E53E3E;
+            border: 1px solid #FEB2B2;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            margin: 3px;
+            font-weight: 600;
+        }
+        .story-text {
+            line-height: 1.7;
+            font-size: 13px;
+            color: #4A5568;
+            margin-bottom: 15px;
+        }
+        .mystic-card {
+            background: linear-gradient(135deg, {{ season_bg_color }} 0%, #FFFFFF 100%);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+            text-align: center;
+            margin-top: 25px;
+        }
+        .mystic-quote {
+            font-style: italic;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #2D3748;
+            margin-bottom: 12px;
+        }
+        .mystic-footer {
+            font-size: 11px;
+            color: #A0AEC0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .footer-page {
+            position: absolute;
+            bottom: 20px;
+            left: 40px;
+            right: 40px;
+            font-size: 10px;
+            color: #A0AEC0;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #E2E8F0;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER -->
+    <div class="page cover-page">
+        <div class="header-brand">Personal Color Analysis • Pro Report</div>
+        <h1 class="cover-title">{{ season }}</h1>
+        <div class="cover-subtitle">Dossier: {{ sub_season }}</div>
+        
+        <div class="photo-container">
+            <img src="{{ image_path }}" alt="Client Photo">
+        </div>
+        
+        <div class="badge">{{ sub_season }}</div>
+        
+        <p class="cover-desc">
+            Welcome to your customized Personal Color Analysis. Based on your dermatological skin undertone (ITA°), natural contrast, and facial pigmentation, you harmoniously align with the <strong>{{ sub_season }}</strong> palette. Explore your optimal colors, jewelry tones, makeup recommendations, and style resonance inside.
+        </p>
+
+        <div class="footer-page">
+            <span>Color Analysis Studio • Confidential Client Report</span>
+            <span>Page 1 of 3</span>
+        </div>
+    </div>
+
+    <!-- PAGE 2: ANALYSIS & PALETTE -->
+    <div class="page">
+        <h2 class="section-title">Color Metrics & Palette</h2>
+        
+        <div class="metrics-grid">
+            <div class="metric-cell">
+                <div class="metric-card">
+                    <h4>ITA° Skin Angle</h4>
+                    <div class="val">{{ "%.1f"|format(metrics.ita_degrees) }}°</div>
+                </div>
+            </div>
+            <div class="metric-cell">
+                <div class="metric-card">
+                    <h4>Warmth Index</h4>
+                    <div class="val">{{ "%.2f"|format(metrics.warmth_score) }}</div>
+                </div>
+            </div>
+            <div class="metric-cell">
+                <div class="metric-card">
+                    <h4>Contrast Level</h4>
+                    <div class="val">{{ "%.2f"|format(metrics.contrast_score) }}</div>
+                </div>
+            </div>
+            <div class="metric-cell">
+                <div class="metric-card">
+                    <h4>Overall Value</h4>
+                    <div class="val">{{ "%.2f"|format(metrics.overall_value) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="font-size: 16px; color: {{ header_color }}; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
+            Your 12 Signature Colors
+        </h3>
+        
+        <div class="swatch-grid">
+            {% for color in palette %}
+            {% if loop.index0 % 4 == 0 %}
+            <div class="swatch-row">
+            {% endif %}
+                <div class="swatch-cell">
+                    <div class="swatch-box" style="background-color: {{ color.hex }};">
+                        <div class="swatch-name">{{ color.name }}</div>
+                        <div class="swatch-hex">{{ color.hex }}</div>
+                    </div>
+                </div>
+            {% if loop.index0 % 4 == 3 or loop.last %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="guide-box">
+            <h4>Recommended Metals & Jewelry</h4>
+            <p><strong>Best Metals:</strong> {{ jewelry }}</p>
+        </div>
+
+        <div class="guide-box">
+            <h4>Contrast & Wardrobe Rules</h4>
+            <p><strong>Contrast Level:</strong> {{ contrast }}</p>
+            <p style="margin-top: 4px;"><strong>Staple Neutrals:</strong> {{ neutrals | join(', ') }}</p>
+        </div>
+
+        <div class="footer-page">
+            <span>Color Analysis Studio • {{ sub_season }}</span>
+            <span>Page 2 of 3</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: MAKEUP & MYSTIC ADVICE -->
+    <div class="page">
+        <h2 class="section-title">Styling & Harmonic Resonance</h2>
+
+        <div class="guide-box">
+            <h4>Makeup & Cosmetics Palette</h4>
+            <p>{{ makeup }}</p>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h4 style="font-size: 14px; color: #E53E3E; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">
+                Colors to Avoid Near Your Face
+            </h4>
+            <div>
+                {% for item in avoid_colors %}
+                <span class="avoid-tag">✕ {{ item }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 20px;">The Science & History</h2>
+        <p class="story-text">
+            Seasonal color analysis originated in the early 20th century, pioneered by Bauhaus master Johannes Itten. Itten observed that his art students naturally gravitated toward pigments matching their personal hair, eye, and skin tones. Today, our engine uses precise CIE L*a*b* color space transformations and Individual Typology Angle (ITA°) calculations to scientifically match your natural light reflection.
+        </p>
+
+        <div class="mystic-card">
+            <div class="mystic-quote">
+                "Colors carry natural frequencies. When you surround yourself with the tones that match your natural resonance, your inner vitality projects outward with effortless harmony. Wear your true colors with confidence and grace."
+            </div>
+            <div class="mystic-footer">
+                • Color Analysis Vibrational Harmony •
+            </div>
+        </div>
+
+        <div class="footer-page">
+            <span>Color Analysis Studio • All Rights Reserved</span>
+            <span>Page 3 of 3</span>
+        </div>
+    </div>
+
+</body>
+</html>
