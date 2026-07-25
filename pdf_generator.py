@@ -330,13 +330,63 @@ def get_base64_image(image_path: str) -> str:
 
 from PIL import Image, ImageOps
 
+from PIL import Image, ImageOps
+import cv2
+import numpy as np
+
 def ensure_upright_image(image_path: str) -> str:
-    """Corrects EXIF orientation so the client face is always standing upright."""
+    """Corrects EXIF orientation and tests 4 rotation angles so the face is always standing upright top-to-bottom (Hair -> Eyes -> Mouth -> Neck)."""
     if not os.path.exists(image_path):
         return image_path
     try:
         img = Image.open(image_path)
         img = ImageOps.exif_transpose(img)
+        
+        cv_img = cv2.cvtColor(np.array(img.convert('RGB')), cv2.COLOR_RGB2BGR)
+        
+        _CASCADE_DIR = cv2.data.haarcascades
+        _FACE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + "haarcascade_frontalface_default.xml")
+        _EYE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + "haarcascade_eye.xml")
+        
+        best_angle = 0
+        max_score = -1.0
+        
+        for angle in [0, 90, 180, 270]:
+            if angle == 0:
+                rotated = cv_img
+            elif angle == 90:
+                rotated = cv2.rotate(cv_img, cv2.ROTATE_90_CLOCKWISE)
+            elif angle == 180:
+                rotated = cv2.rotate(cv_img, cv2.ROTATE_180)
+            elif angle == 270:
+                rotated = cv2.rotate(cv_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                
+            gray = cv2.cvtColor(rotated, cv2.COLOR_BGR2GRAY)
+            gray_eq = cv2.equalizeHist(gray)
+            faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
+            
+            if len(faces) > 0:
+                largest_face = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
+                fx, fy, fw, fh = largest_face
+                
+                # Check eyes in upper 55% of face box
+                roi_upper = gray_eq[fy:fy + int(fh * 0.55), fx:fx + fw]
+                eyes = _EYE_CASCADE.detectMultiScale(roi_upper, scaleFactor=1.1, minNeighbors=4, minSize=(12, 12))
+                
+                score = (fw * fh) + (len(eyes) * 10000)
+                if score > max_score:
+                    max_score = score
+                    best_angle = angle
+                    
+        if best_angle != 0:
+            print(f"Auto-rotating photo by {best_angle}° for upright top-to-bottom face orientation.")
+            if best_angle == 90:
+                img = img.rotate(-90, expand=True)
+            elif best_angle == 180:
+                img = img.rotate(180, expand=True)
+            elif best_angle == 270:
+                img = img.rotate(90, expand=True)
+                
         out_dir = os.path.dirname(os.path.abspath(image_path))
         upright_path = os.path.join(out_dir, "_upright_" + os.path.basename(image_path))
         if not upright_path.lower().endswith((".png", ".jpg", ".jpeg")):
@@ -347,11 +397,8 @@ def ensure_upright_image(image_path: str) -> str:
         print(f"Orientation fix note: {e}")
         return image_path
 
-import cv2
-import numpy as np
-
 def crop_face_only(image_path: str) -> str:
-    """Detects face and crops tightly to ONLY the face and hair (removing shoulders, neck, and clothing)."""
+    """Detects face and crops cleanly to Hair -> Eyes -> Mouth -> Chin -> Neck (stopping before shoulders/clothing)."""
     if not os.path.exists(image_path):
         return image_path
     try:
@@ -372,10 +419,10 @@ def crop_face_only(image_path: str) -> str:
         faces = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)
         (fx, fy, fw, fh) = faces[0]
         
-        # Calculate tight face+hair crop box (margin: 40% top for hair, 20% sides, 8% bottom for chin)
+        # Anatomical framing: Hair (top -45%) -> Eyes -> Mouth -> Chin -> Neck (+25% below chin)
         h_img, w_img = gray.shape[:2]
-        crop_top = max(0, int(fy - fh * 0.40))
-        crop_bottom = min(h_img, int(fy + fh * 1.08))
+        crop_top = max(0, int(fy - fh * 0.45))
+        crop_bottom = min(h_img, int(fy + fh * 1.25))
         crop_left = max(0, int(fx - fw * 0.25))
         crop_right = min(w_img, int(fx + fw * 1.25))
         
