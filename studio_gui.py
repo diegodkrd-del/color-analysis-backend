@@ -2,13 +2,13 @@ import os
 import sys
 import threading
 import subprocess
+import traceback
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from PIL import Image, ImageTk
 
 # Import local backend engines
 from color_analyzer_v2 import analyze_photo
-from background_remover import remove_background
 from pdf_generator import generate_pdf, SUBSEASON_PALETTES
 from email_service import send_pdf_email
 
@@ -16,7 +16,7 @@ class ChromatypeStudioApp:
     def __init__(self, root):
         self.root = root
         self.root.title("CHROMATYPE Studio — Professional Color Analysis Generator")
-        self.root.geometry("640x720")
+        self.root.geometry("640x740")
         self.root.resizable(False, False)
         
         # Style
@@ -84,13 +84,15 @@ class ChromatypeStudioApp:
         
         # Options
         self.open_pdf_var = tk.BooleanVar(value=True)
+        self.remove_bg_var = tk.BooleanVar(value=True)
         self.send_email_var = tk.BooleanVar(value=False)
         
         chk_frame = ttk.Frame(form_frame)
         chk_frame.grid(row=9, column=0, columnspan=2, pady=10, sticky="w")
         
         ttk.Checkbutton(chk_frame, text="Open PDF automatically after generation", variable=self.open_pdf_var).pack(anchor="w")
-        ttk.Checkbutton(chk_frame, text="Send PDF via SMTP email automatically", variable=self.send_email_var).pack(anchor="w")
+        ttk.Checkbutton(chk_frame, text="Attempt AI Background Cutout (RemBG)", variable=self.remove_bg_var).pack(anchor="w")
+        ttk.Checkbutton(chk_frame, text="Send PDF via Email automatically (Requires SMTP credentials)", variable=self.send_email_var).pack(anchor="w")
         
         # Status Bar & Progress
         self.progress_bar = ttk.Progressbar(form_frame, mode="indeterminate")
@@ -130,7 +132,7 @@ class ChromatypeStudioApp:
             img.thumbnail((110, 110))
             self.tk_img = ImageTk.PhotoImage(img)
             self.preview_label.config(image=self.tk_img, text="")
-        except Exception as e:
+        except Exception:
             self.preview_label.config(image="", text="No Preview")
 
     def start_generation(self):
@@ -145,7 +147,7 @@ class ChromatypeStudioApp:
         self.generate_btn.config(state="disabled")
         self.browse_btn.config(state="disabled")
         self.progress_bar.start(10)
-        self.status_label.config(text="Processing report...", foreground="#2563EB")
+        self.update_status("Starting color analysis...")
         
         threading.Thread(
             target=self.run_pipeline,
@@ -156,7 +158,7 @@ class ChromatypeStudioApp:
     def run_pipeline(self, image_path, client_name, client_email, selected_season):
         try:
             # 1. Analyze colors
-            self.update_status("1/4 Analyzing skin tone & color metrics...")
+            self.update_status("1/3 Analyzing skin tone & color metrics...")
             analysis_data = analyze_photo(image_path, apply_white_balance=True)
             
             # Manual Season Override
@@ -171,17 +173,22 @@ class ChromatypeStudioApp:
                 elif "Winter" in selected_season:
                     analysis_data['season'] = "Winter"
 
-            # 2. Background removal
-            self.update_status("2/4 Removing background...")
-            temp_cutout = os.path.join(self.output_dir, "_temp_cutout.png")
-            try:
-                remove_background(image_path, temp_cutout)
-                cutout_path = temp_cutout
-            except Exception:
-                cutout_path = image_path
+            # 2. Background removal (with safe fallback)
+            cutout_path = image_path
+            if self.remove_bg_var.get():
+                self.update_status("2/3 Processing background removal...")
+                temp_cutout = os.path.join(self.output_dir, "_temp_cutout.png")
+                try:
+                    from background_remover import remove_background
+                    remove_background(image_path, temp_cutout)
+                    if os.path.exists(temp_cutout) and os.path.getsize(temp_cutout) > 1000:
+                        cutout_path = temp_cutout
+                except Exception as bg_err:
+                    print(f"Background removal skipped/fallback: {bg_err}")
+                    cutout_path = image_path
 
             # 3. Generate PDF
-            self.update_status("3/4 Rendering 3-Page PDF Dossier...")
+            self.update_status("3/3 Rendering 3-Page PDF Dossier...")
             safe_name = "".join(c for c in client_name if c.isalnum() or c in (' ', '_')).rstrip()
             safe_name = safe_name.replace(' ', '_')
             output_filename = f"CHROMATYPE_Report_{safe_name}.pdf"
@@ -189,45 +196,57 @@ class ChromatypeStudioApp:
             
             generated_path = generate_pdf(cutout_path, analysis_data, output_pdf_path, client_name=client_name)
             
-            # Clean up temp cutout
-            if os.path.exists(temp_cutout):
-                try: os.remove(temp_cutout)
+            # Clean up temp cutout if created
+            if cutout_path != image_path and os.path.exists(cutout_path):
+                try: os.remove(cutout_path)
                 except: pass
 
             # 4. Optional Email
+            email_status_msg = ""
             if self.send_email_var.get() and client_email:
-                self.update_status("4/4 Sending email to client...")
-                send_pdf_email(client_email, generated_path)
+                self.update_status("Sending email to client...")
+                try:
+                    sent_ok = send_pdf_email(client_email, generated_path)
+                    if not sent_ok:
+                        email_status_msg = "\n(Note: Email delivery failed. Please check SMTP settings)."
+                except Exception as mail_err:
+                    email_status_msg = f"\n(Note: Email skipped: {mail_err})"
 
-            self.root.after(0, self.on_success, generated_path)
+            self.root.after(0, self.on_success, generated_path, email_status_msg)
         except Exception as e:
+            traceback.print_exc()
             self.root.after(0, self.on_error, str(e))
 
     def update_status(self, text):
-        self.root.after(0, lambda: self.status_label.config(text=text, foreground="#2563EB"))
+        self.root.after_idle(lambda: self.status_label.config(text=text, foreground="#2563EB"))
 
-    def on_success(self, pdf_path):
+    def on_success(self, pdf_path, extra_msg=""):
         self.progress_bar.stop()
         self.generate_btn.config(state="normal")
         self.browse_btn.config(state="normal")
-        self.status_label.config(text=f"✓ Report Generated: {os.path.basename(pdf_path)}", foreground="#10B981")
+        self.status_label.config(text=f"✓ Complete: {os.path.basename(pdf_path)}", foreground="#10B981")
         
-        if self.open_pdf_var.get():
+        if self.open_pdf_var.get() and os.path.exists(pdf_path):
             try:
                 os.startfile(pdf_path)
             except Exception:
                 subprocess.Popen(['start', pdf_path], shell=True)
 
-        messagebox.showinfo("Success!", f"Color Analysis Report successfully generated!\n\nSaved to:\n{pdf_path}")
+        messagebox.showinfo("Report Ready!", f"Color Analysis Report successfully generated!\n\nSaved to:\n{pdf_path}{extra_msg}")
 
     def on_error(self, err_msg):
         self.progress_bar.stop()
         self.generate_btn.config(state="normal")
         self.browse_btn.config(state="normal")
         self.status_label.config(text="Generation Error", foreground="#EF4444")
-        messagebox.showerror("Error Generating Report", f"An error occurred:\n{err_msg}")
+        messagebox.showerror("Error Generating Report", f"An error occurred while building the report:\n{err_msg}")
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = ChromatypeStudioApp(root)
-    root.mainloop()
+    try:
+        root = tk.Tk()
+        app = ChromatypeStudioApp(root)
+        root.mainloop()
+    except Exception as e:
+        print("Fatal error starting CHROMATYPE Studio GUI:")
+        traceback.print_exc()
+        input("Press Enter to exit...")
