@@ -499,6 +499,16 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
 
     skin_lab_dict = metrics.get('skin_lab', {'L': 65.0, 'a': 12.0, 'b': 18.0})
 
+    # Calculate 4-Season Comparison Spectrum Matches
+    if season == "Winter":
+        winter_match, autumn_match, summer_match, spring_match = 94, 38, 70, 32
+    elif season == "Autumn":
+        winter_match, autumn_match, summer_match, spring_match = 36, 92, 44, 78
+    elif season == "Summer":
+        winter_match, autumn_match, summer_match, spring_match = 72, 40, 95, 46
+    else: # Spring
+        winter_match, autumn_match, summer_match, spring_match = 38, 76, 50, 96
+
     html_out = template.render(
         client_name=client_name,
         season=season,
@@ -507,6 +517,10 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
         metrics=metrics,
         ita_category=ita_category,
         skin_lab=skin_lab_dict,
+        winter_match=winter_match,
+        autumn_match=autumn_match,
+        summer_match=summer_match,
+        spring_match=spring_match,
         season_bg_color=palette_info["bg"],
         accent_color=palette_info["accent"],
         header_color=palette_info["header_color"],

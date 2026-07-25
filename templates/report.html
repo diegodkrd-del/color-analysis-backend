@@ -264,12 +264,83 @@
         </p>
 
         <div class="footer-page">
-            <span>Color Analysis Studio • Confidential Client Report</span>
-            <span>Page 1 of 3</span>
+            <span>CHROMATYPE Studio • Confidential Client Report</span>
+            <span>Page 1 of {{ palette|length + 4 }}</span>
         </div>
     </div>
 
-    <!-- PAGE 2: ANALYSIS & PALETTE -->
+    <!-- PAGE 2: COLORWISE RADIAL WHEEL & 4-SEASON SPECTRUM COMPARISON -->
+    <div class="page" style="text-align: center;">
+        <h2 class="section-title">Colorwise Wheel & Seasonal Spectrum</h2>
+
+        <!-- CIRCULAR COLOR WHEEL FRAME -->
+        <div style="position: relative; width: 330px; height: 330px; margin: 15px auto; display: flex; justify-content: center; align-items: center;">
+            <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: conic-gradient(
+                {% for color in palette %}
+                {{ color.hex }} {{ (loop.index0 * 360 / palette|length)|round(1) }}deg {{ (loop.index * 360 / palette|length)|round(1) }}deg{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ); box-shadow: 0 15px 35px rgba(0,0,0,0.25);">
+            </div>
+
+            <div style="position: absolute; width: 220px; height: 220px; border-radius: 50%; overflow: hidden; border: 6px solid #FFFFFF; box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 10px 25px rgba(0,0,0,0.3); background-color: #FFFFFF;">
+                <img src="{{ image_path }}" style="width: 100%; height: 100%; object-fit: cover; object-position: center 30%;" alt="Client Palette Wheel">
+            </div>
+        </div>
+
+        <div style="font-size: 13px; font-weight: bold; letter-spacing: 2px; color: {{ header_color }}; text-transform: uppercase; margin-bottom: 25px;">
+            360° Palette Resonance Ring • {{ sub_season }}
+        </div>
+
+        <!-- 4-SEASON COMPARISON SPECTRUM BARS -->
+        <h3 style="font-size: 15px; color: {{ header_color }}; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">
+            4-Season Match Spectrum Comparison
+        </h3>
+
+        <div style="display: flex; justify-content: space-around; align-items: flex-end; height: 190px; background: #F8FAFC; padding: 20px 15px; border-radius: 16px; border: 1px solid #E2E8F0; margin-bottom: 25px;">
+            <!-- WINTER BAR -->
+            <div style="display: flex; flex-direction: column; align-items: center; width: 22%;">
+                <div style="font-size: 11px; font-weight: bold; margin-bottom: 6px; color: #0F172A;">WINTER</div>
+                <div style="position: relative; width: 34px; height: 135px; background: linear-gradient(to top, #000000, #004080, #800080, #E60073, #FFFFFF); border-radius: 8px; border: 1px solid #CBD5E1;">
+                    <div style="position: absolute; bottom: {{ winter_match }}%; left: -5px; width: 44px; height: 6px; background: #2563EB; border: 2px solid #FFFFFF; border-radius: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>
+                </div>
+                <div style="font-size: 11px; margin-top: 6px; font-weight: bold; color: #2563EB;">{{ winter_match }}%</div>
+            </div>
+
+            <!-- AUTUMN BAR -->
+            <div style="display: flex; flex-direction: column; align-items: center; width: 22%;">
+                <div style="font-size: 11px; font-weight: bold; margin-bottom: 6px; color: #0F172A;">AUTUMN</div>
+                <div style="position: relative; width: 34px; height: 135px; background: linear-gradient(to top, #1B4332, #D97706, #B45309, #78350F, #FEF3C7); border-radius: 8px; border: 1px solid #CBD5E1;">
+                    <div style="position: absolute; bottom: {{ autumn_match }}%; left: -5px; width: 44px; height: 6px; background: #D97706; border: 2px solid #FFFFFF; border-radius: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>
+                </div>
+                <div style="font-size: 11px; margin-top: 6px; font-weight: bold; color: #D97706;">{{ autumn_match }}%</div>
+            </div>
+
+            <!-- SUMMER BAR -->
+            <div style="display: flex; flex-direction: column; align-items: center; width: 22%;">
+                <div style="font-size: 11px; font-weight: bold; margin-bottom: 6px; color: #0F172A;">SUMMER</div>
+                <div style="position: relative; width: 34px; height: 135px; background: linear-gradient(to top, #1E3A8A, #60A5FA, #A7F3D0, #F472B6, #F8FAFC); border-radius: 8px; border: 1px solid #CBD5E1;">
+                    <div style="position: absolute; bottom: {{ summer_match }}%; left: -5px; width: 44px; height: 6px; background: #3B82F6; border: 2px solid #FFFFFF; border-radius: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>
+                </div>
+                <div style="font-size: 11px; margin-top: 6px; font-weight: bold; color: #3B82F6;">{{ summer_match }}%</div>
+            </div>
+
+            <!-- SPRING BAR -->
+            <div style="display: flex; flex-direction: column; align-items: center; width: 22%;">
+                <div style="font-size: 11px; font-weight: bold; margin-bottom: 6px; color: #0F172A;">SPRING</div>
+                <div style="position: relative; width: 34px; height: 135px; background: linear-gradient(to top, #059669, #F59E0B, #F97316, #EF4444, #FFFBEB); border-radius: 8px; border: 1px solid #CBD5E1;">
+                    <div style="position: absolute; bottom: {{ spring_match }}%; left: -5px; width: 44px; height: 6px; background: #10B981; border: 2px solid #FFFFFF; border-radius: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>
+                </div>
+                <div style="font-size: 11px; margin-top: 6px; font-weight: bold; color: #10B981;">{{ spring_match }}%</div>
+            </div>
+        </div>
+
+        <div class="footer-page">
+            <span>CHROMATYPE Studio • Colorwise Ring & Spectrum</span>
+            <span>Page 2 of {{ palette|length + 4 }}</span>
+        </div>
+    </div>
+
+    <!-- PAGE 3: ANALYSIS & PALETTE -->
     <div class="page">
         <h2 class="section-title">Color Metrics & Optical Analysis</h2>
         
@@ -341,11 +412,11 @@
 
         <div class="footer-page">
             <span>CHROMATYPE Studio • {{ sub_season }}</span>
-            <span>Page 2 of 3</span>
+            <span>Page 3 of {{ palette|length + 4 }}</span>
         </div>
     </div>
 
-    <!-- PAGE 3: MAKEUP & MYSTIC ADVICE -->
+    <!-- PAGE 4: MAKEUP & MYSTIC ADVICE -->
     <div class="page">
         <h2 class="section-title">Styling & Harmonic Resonance</h2>
 
@@ -384,11 +455,11 @@
 
         <div class="footer-page">
             <span>CHROMATYPE Studio • Confidential Report for {{ client_name }}</span>
-            <span>Page 3 of {{ palette|length + 3 }}</span>
+            <span>Page 4 of {{ palette|length + 4 }}</span>
         </div>
     </div>
 
-    <!-- PAGES 4 TO 15: VIRTUAL COLOR DRAPING PAGES (ONE PER PALETTE COLOR) -->
+    <!-- PAGES 5 TO 16: VIRTUAL COLOR DRAPING PAGES (ONE PER PALETTE COLOR) -->
     {% for color in palette %}
     <div class="page" style="background-color: {{ color.hex }}; color: #FFFFFF; padding: 40px 30px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center;">
         <div style="background: rgba(0,0,0,0.65); padding: 14px 28px; border-radius: 30px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.2);">
@@ -409,7 +480,7 @@
 
         <div class="footer-page" style="border-top: 1px solid rgba(255,255,255,0.3); color: #F1F5F9;">
             <span>CHROMATYPE Studio • Draping Swatch {{ loop.index }}</span>
-            <span>Page {{ loop.index + 3 }} of {{ palette|length + 3 }}</span>
+            <span>Page {{ loop.index + 4 }} of {{ palette|length + 4 }}</span>
         </div>
     </div>
     {% endfor %}
