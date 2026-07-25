@@ -347,13 +347,61 @@ def ensure_upright_image(image_path: str) -> str:
         print(f"Orientation fix note: {e}")
         return image_path
 
+import cv2
+import numpy as np
+
+def crop_face_only(image_path: str) -> str:
+    """Detects face and crops tightly to ONLY the face and hair (removing shoulders, neck, and clothing)."""
+    if not os.path.exists(image_path):
+        return image_path
+    try:
+        cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        if cv_img is None:
+            return image_path
+            
+        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+        gray = cv2.equalizeHist(gray)
+        
+        _CASCADE_DIR = cv2.data.haarcascades
+        _FACE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + "haarcascade_frontalface_default.xml")
+        faces = _FACE_CASCADE.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
+        
+        if len(faces) == 0:
+            return image_path
+            
+        faces = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)
+        (fx, fy, fw, fh) = faces[0]
+        
+        # Calculate tight face+hair crop box (margin: 40% top for hair, 20% sides, 8% bottom for chin)
+        h_img, w_img = gray.shape[:2]
+        crop_top = max(0, int(fy - fh * 0.40))
+        crop_bottom = min(h_img, int(fy + fh * 1.08))
+        crop_left = max(0, int(fx - fw * 0.25))
+        crop_right = min(w_img, int(fx + fw * 1.25))
+        
+        cropped_cv = cv_img[crop_top:crop_bottom, crop_left:crop_right]
+        
+        out_dir = os.path.dirname(os.path.abspath(image_path))
+        face_only_path = os.path.join(out_dir, "_face_only_" + os.path.basename(image_path))
+        if not face_only_path.lower().endswith((".png", ".jpg", ".jpeg")):
+            face_only_path += ".png"
+            
+        cv2.imwrite(face_only_path, cropped_cv)
+        return face_only_path
+    except Exception as e:
+        print(f"Face crop note: {e}")
+        return image_path
+
 def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, client_name: str = "Valued Client") -> str:
     """
     Generates a multi-page PDF report based on the color analysis data.
     Uses Microsoft Edge Headless or WeasyPrint for pixel-perfect PDF output.
     """
-    # Ensure client photo is upright
+    # 1. Ensure client photo is upright
     image_path = ensure_upright_image(image_path)
+    
+    # 2. Crop tightly to face & hair (removing shoulders/neck/clothing)
+    image_path = crop_face_only(image_path)
     
     season = analysis_data.get('season', 'Spring') or 'Spring'
     sub_season = analysis_data.get('sub_season', season) or season
