@@ -1,17 +1,17 @@
-FROM python:3.10-slim
+FROM python:3.10-slim-bookworm
 
-# Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PORT=10000
 
-# Install system dependencies required for WeasyPrint, OpenCV, and rembg
+# Install system dependencies for WeasyPrint and OpenCV
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
     libcairo2 \
     libpango-1.0-0 \
-    libgdk-pixbuf2.0-0 \
+    libpangoft2-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
     libffi-dev \
     shared-mime-info \
     libgl1 \
@@ -23,6 +23,7 @@ WORKDIR /app
 
 # Copy requirements and install
 COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
