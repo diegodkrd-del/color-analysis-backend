@@ -397,6 +397,20 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
     env = Environment(loader=FileSystemLoader(os.path.join(current_dir, 'templates')))
     template = env.get_template('report.html')
     
+    # High-Efficiency Transparent PNG Compression to keep 52-page PDF well under 23MB (target ~5MB to 12MB)
+    try:
+        if os.path.exists(image_path):
+            with Image.open(image_path) as img:
+                img.thumbnail((360, 360), Image.Resampling.LANCZOS)
+                compressed_path = os.path.join(os.path.dirname(os.path.abspath(image_path)), "_opt_" + os.path.basename(image_path))
+                if not compressed_path.lower().endswith('.png'):
+                    compressed_path += '.png'
+                img.save(compressed_path, format="PNG", optimize=True, compress_level=9)
+                if os.path.exists(compressed_path) and os.path.getsize(compressed_path) > 100:
+                    image_path = compressed_path
+    except Exception as compress_err:
+        pass
+
     base64_img = get_base64_image(image_path)
     if not base64_img:
         abs_img_path = f"file:///{os.path.abspath(image_path).replace(chr(92), '/')}"
