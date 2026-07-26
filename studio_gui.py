@@ -143,12 +143,55 @@ class ChromatypeStudioApp:
         
         ttk.Label(smtp_labelframe, text="Need App Password? Generate one in Google Account -> Security -> App Passwords", font=("Helvetica", 8, "italic"), foreground="#6B7280").grid(row=2, column=0, columnspan=2, sticky="w", pady=(2, 0))
         
+        # 6. Interactive HSL Color Mixer & 4-Season Spectrum Panel
+        hsl_labelframe = ttk.LabelFrame(form_frame, text="🎨 Interactive HSL Color Mixer & 4-Season Spectrum", padding="10")
+        hsl_labelframe.grid(row=11, column=0, columnspan=2, sticky="ew", pady=10)
+        
+        # H, S, L Variables
+        self.hue_var = tk.IntVar(value=344)
+        self.sat_var = tk.IntVar(value=100)
+        self.light_var = tk.IntVar(value=40)
+        self.hex_var = tk.StringVar(value="#CE0037")
+        
+        # HUE Slider
+        ttk.Label(hsl_labelframe, text="H (Hue: 0°–360°):", font=("Helvetica", 9, "bold")).grid(row=0, column=0, sticky="w")
+        self.hue_scale = ttk.Scale(hsl_labelframe, from_=0, to=360, variable=self.hue_var, command=self.update_hsl_from_sliders)
+        self.hue_scale.grid(row=0, column=1, sticky="ew", padx=5)
+        self.hue_entry = ttk.Entry(hsl_labelframe, textvariable=self.hue_var, width=6, font=("Helvetica", 9))
+        self.hue_entry.grid(row=0, column=2, sticky="w")
+        
+        # SATURATION Slider
+        ttk.Label(hsl_labelframe, text="S (Sat: 0%–100%):", font=("Helvetica", 9, "bold")).grid(row=1, column=0, sticky="w")
+        self.sat_scale = ttk.Scale(hsl_labelframe, from_=0, to=100, variable=self.sat_var, command=self.update_hsl_from_sliders)
+        self.sat_scale.grid(row=1, column=1, sticky="ew", padx=5)
+        self.sat_entry = ttk.Entry(hsl_labelframe, textvariable=self.sat_var, width=6, font=("Helvetica", 9))
+        self.sat_entry.grid(row=1, column=2, sticky="w")
+        
+        # LIGHTNESS Slider
+        ttk.Label(hsl_labelframe, text="L (Light: 0%–100%):", font=("Helvetica", 9, "bold")).grid(row=2, column=0, sticky="w")
+        self.light_scale = ttk.Scale(hsl_labelframe, from_=0, to=100, variable=self.light_var, command=self.update_hsl_from_sliders)
+        self.light_scale.grid(row=2, column=1, sticky="ew", padx=5)
+        self.light_entry = ttk.Entry(hsl_labelframe, textvariable=self.light_var, width=6, font=("Helvetica", 9))
+        self.light_entry.grid(row=2, column=2, sticky="w")
+        
+        # HEX Code Entry
+        ttk.Label(hsl_labelframe, text="HEX Code:", font=("Helvetica", 9, "bold")).grid(row=3, column=0, sticky="w")
+        self.hex_entry = ttk.Entry(hsl_labelframe, textvariable=self.hex_var, width=12, font=("Helvetica", 9, "bold"))
+        self.hex_entry.grid(row=3, column=1, sticky="w", padx=5, pady=4)
+        
+        # Live Color Swatch Box
+        self.color_swatch_box = tk.Frame(hsl_labelframe, width=120, height=50, bg="#CE0037", relief="solid", bd=1)
+        self.color_swatch_box.grid(row=0, column=3, rowspan=4, padx=10, pady=2)
+        self.color_swatch_box.pack_propagate(False)
+        self.swatch_text = tk.Label(self.color_swatch_box, text="#CE0037", bg="#CE0037", fg="#FFFFFF", font=("Helvetica", 9, "bold"))
+        self.swatch_text.pack(expand=True)
+
         # Status Bar & Progress
         self.progress_bar = ttk.Progressbar(form_frame, mode="indeterminate")
-        self.progress_bar.grid(row=11, column=0, columnspan=2, sticky="ew", pady=(10, 2))
+        self.progress_bar.grid(row=12, column=0, columnspan=2, sticky="ew", pady=(10, 2))
         
         self.status_label = ttk.Label(form_frame, text="Ready", font=("Helvetica", 10, "bold"), foreground="#10B981")
-        self.status_label.grid(row=12, column=0, columnspan=2, pady=(0, 10))
+        self.status_label.grid(row=13, column=0, columnspan=2, pady=(0, 10))
         
         # Big Generate Button
         self.generate_btn = tk.Button(
@@ -163,7 +206,23 @@ class ChromatypeStudioApp:
             pady=12,
             command=self.start_generation
         )
-        self.generate_btn.grid(row=13, column=0, columnspan=2, sticky="ew", pady=(5, 15))
+        self.generate_btn.grid(row=14, column=0, columnspan=2, sticky="ew", pady=(5, 15))
+
+    def update_hsl_from_sliders(self, *args):
+        try:
+            h = int(self.hue_var.get()) % 360
+            s = max(0, min(100, int(self.sat_var.get()))) / 100.0
+            l = max(0, min(100, int(self.light_var.get()))) / 100.0
+            
+            import colorsys
+            r, g, b = colorsys.hls_to_rgb(h / 360.0, l, s)
+            hex_code = f"#{int(r * 255):02X}{int(g * 255):02X}{int(b * 255):02X}"
+            
+            self.hex_var.set(hex_code)
+            self.color_swatch_box.config(bg=hex_code)
+            self.swatch_text.config(text=hex_code, bg=hex_code, fg="#FFFFFF" if l < 0.6 else "#000000")
+        except Exception:
+            pass
 
     def browse_photo(self):
         file_path = filedialog.askopenfilename(
