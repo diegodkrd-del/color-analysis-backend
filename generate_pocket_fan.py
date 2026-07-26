@@ -6,8 +6,9 @@ import subprocess
 
 def create_pocket_fan_html(output_html_path: str):
     """
-    Generates a print-ready Pocket Swatch Fan HTML containing all 12 sub-seasons x 36 colors = 432 swatches.
-    Formatted as slim vertical cards (60mm x 180mm) with rivet hole guidelines for printing and laminating.
+    Generates a print-ready 3-column x 2-row grid layout (exactly 6 cards per A4 page).
+    Each card features 6 curated color swatches, rivet hole guidelines, and trim borders.
+    Total: 12 Sub-Seasons x 36 Colors = 432 Swatches across 72 Swatch Cards (12 A4 pages).
     """
     all_seasons_data = []
     
@@ -30,39 +31,39 @@ def create_pocket_fan_html(output_html_path: str):
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CHROMATYPE — Print-Ready 12-Season Pocket Swatch Fan</title>
+    <title>CHROMATYPE — 6 Cards Per Page Print-Ready Pocket Swatch Fan</title>
     <style>
         @page {{
             size: A4 portrait;
-            margin: 10mm;
+            margin: 0;
         }}
         body {{
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #F8FAFC;
+            background-color: #FFFFFF;
             -webkit-print-color-adjust: exact;
         }}
         .page-sheet {{
-            width: 190mm;
-            height: 277mm;
+            width: 210mm;
+            height: 297mm;
             page-break-after: always;
             box-sizing: border-box;
-            display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            gap: 5mm;
-            padding: 5mm;
+            display: grid;
+            grid-template-columns: repeat(3, 60mm);
+            grid-template-rows: repeat(2, 132mm);
+            gap: 6mm 4mm;
+            padding: 10mm 11mm;
             background: #FFFFFF;
             margin: 0 auto;
         }}
         .swatch-card {{
-            width: 58mm;
-            height: 125mm;
+            width: 60mm;
+            height: 132mm;
             border: 1px dashed #CBD5E1;
-            border-radius: 8mm;
+            border-radius: 6mm;
             box-sizing: border-box;
-            padding: 4mm;
+            padding: 3mm 4mm;
             position: relative;
             background: #FFFFFF;
             display: flex;
@@ -71,23 +72,23 @@ def create_pocket_fan_html(output_html_path: str):
         }}
         .rivet-hole {{
             position: absolute;
-            top: 4mm;
+            top: 3.5mm;
             left: 50%;
             transform: translateX(-50%);
-            width: 5mm;
-            height: 5mm;
+            width: 4.5mm;
+            height: 4.5mm;
             border-radius: 50%;
-            border: 1px solid #94A3B8;
+            border: 1px solid #64748B;
             background: #F1F5F9;
         }}
         .card-header {{
-            margin-top: 7mm;
+            margin-top: 6.5mm;
             text-align: center;
             border-bottom: 2px solid #E2E8F0;
-            padding-bottom: 2mm;
+            padding-bottom: 1.5mm;
         }}
         .card-season-title {{
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -99,34 +100,31 @@ def create_pocket_fan_html(output_html_path: str):
             flex-direction: column;
             justify-content: space-around;
             margin-top: 2mm;
+            gap: 1.5mm;
         }}
         .swatch-item {{
-            height: 12mm;
-            border-radius: 3mm;
+            height: 13mm;
+            border-radius: 2.5mm;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 3mm;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         }}
         .swatch-name {{
             font-size: 8px;
             font-weight: 700;
             text-transform: uppercase;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-            color: #FFFFFF;
         }}
         .swatch-hex {{
             font-size: 7px;
-            font-weight: 600;
+            font-weight: 700;
             font-family: monospace;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-            color: #FFFFFF;
         }}
         .card-footer {{
             text-align: center;
-            font-size: 6.5px;
-            font-weight: 700;
+            font-size: 6px;
+            font-weight: 800;
             color: #94A3B8;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -137,7 +135,7 @@ def create_pocket_fan_html(output_html_path: str):
 <body>
 """
 
-    # Generate Pages (3 cards per row x 2 rows = 6 cards per A4 page)
+    # Generate Cards (3 cards per row x 2 rows = 6 cards per A4 page)
     all_cards_flat = []
     for sub in all_seasons_data:
         for idx, card_colors in enumerate(sub['cards']):
@@ -161,7 +159,7 @@ def create_pocket_fan_html(output_html_path: str):
                 <div class="card-swatches">
             """
             for sw in card['colors']:
-                # Decide text color based on luminance
+                # Calculate contrast text color
                 hex_clean = sw['hex'].lstrip('#')
                 r = int(hex_clean[0:2], 16)
                 g = int(hex_clean[2:4], 16)
@@ -171,13 +169,13 @@ def create_pocket_fan_html(output_html_path: str):
 
                 html_content += f"""
                     <div class="swatch-item" style="background-color: {sw['hex']};">
-                        <span class="swatch-name" style="color: {text_col}; text-shadow: none;">{sw['name']}</span>
-                        <span class="swatch-hex" style="color: {text_col}; text-shadow: none;">{sw['hex']}</span>
+                        <span class="swatch-name" style="color: {text_col};">{sw['name']}</span>
+                        <span class="swatch-hex" style="color: {text_col};">{sw['hex']}</span>
                     </div>
                 """
             html_content += f"""
                 </div>
-                <div class="card-footer">CHROMATYPE • POCKET FAN #{card['card_num']}</div>
+                <div class="card-footer">CHROMATYPE • SWATCH #{card['card_num']}</div>
             </div>
             """
         html_content += '</div>\n'
@@ -218,6 +216,6 @@ def generate_pocket_fan_pdf(output_pdf_path: str) -> str:
 
 if __name__ == '__main__':
     target_pdf = r"C:\Users\dkven\Desktop\CHROMATYPE_Reports\CHROMATYPE_Pocket_Color_Fan_12Seasons_PrintReady.pdf"
-    print("Generating Print-Ready Pocket Swatch Fan PDF...")
+    print("Generating 3-Column x 2-Row Grid (6 Cards per Page) Pocket Swatch Fan PDF...")
     generate_pocket_fan_pdf(target_pdf)
     print(f"Done! Saved to: {target_pdf}")
