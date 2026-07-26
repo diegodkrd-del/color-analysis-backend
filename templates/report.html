@@ -519,28 +519,54 @@
         </div>
     </div>
 
-    <!-- PAGES 5 TO 16: VIRTUAL COLOR DRAPING PAGES (ONE PER PALETTE COLOR) -->
-    {% for color in palette %}
-    <div class="page" style="background-color: {{ color.hex }}; color: #FFFFFF; padding: 40px 30px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center;">
-        <div style="background: rgba(0,0,0,0.65); padding: 14px 28px; border-radius: 30px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.2);">
-            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: #CBD5E1;">CHROMATYPE Virtual Drape • Swatch {{ loop.index }} of {{ palette|length }}</div>
-            <h2 style="font-size: 26px; margin: 2px 0 0 0; text-transform: uppercase; letter-spacing: 1px; color: #FFFFFF;">{{ color.name }}</h2>
-            <div style="font-size: 13px; opacity: 0.95; font-weight: 700; letter-spacing: 2px; color: #F1F5F9;">HEX CODE: {{ color.hex }}</div>
+    <!-- PAGES 5 TO 22: VIRTUAL COLOR DRAPING PAGES (2 SWATCHES PER PAGE - HALF PAGE TOP / HALF PAGE BOTTOM) -->
+    {% for i in range(0, palette|length, 2) %}
+    {% set sw1 = palette[i] %}
+    {% set sw2 = palette[i+1] if i+1 < palette|length else None %}
+    <div class="page" style="padding: 0; display: flex; flex-direction: column; height: 297mm; box-sizing: border-box; overflow: hidden;">
+        
+        <!-- TOP HALF DRAPE (SWATCH 1) -->
+        <div style="height: 144mm; background-color: {{ sw1.hex }}; color: #FFFFFF; padding: 15px 25px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; position: relative; border-bottom: 3px solid #FFFFFF;">
+            <div style="background: rgba(0,0,0,0.65); padding: 6px 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);">
+                <span style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #CBD5E1;">CHROMATYPE Virtual Drape • Color {{ i + 1 }} of {{ palette|length }}</span>
+                <h3 style="font-size: 18px; margin: 1px 0 0 0; text-transform: uppercase; letter-spacing: 1px; color: #FFFFFF;">{{ sw1.name }}</h3>
+                <span style="font-size: 10px; opacity: 0.95; font-weight: 700; letter-spacing: 1px; color: #F1F5F9;">HEX: {{ sw1.hex }}</span>
+            </div>
+
+            <div style="height: 170px; display: flex; justify-content: center; align-items: center; margin: 4px 0;">
+                <img src="{{ image_path }}" style="max-height: 165px; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.45));" alt="{{ sw1.name }}">
+            </div>
+
+            <div style="background: rgba(0,0,0,0.65); padding: 6px 16px; border-radius: 8px; max-width: 480px; border: 1px solid rgba(255,255,255,0.2);">
+                <p style="margin: 0; font-size: 10.5px; line-height: 1.3; color: #F8FAFC;">
+                    <strong>Primary Harmony:</strong> <strong>{{ sw1.name }}</strong> illuminates your natural <strong>{{ sub_season }}</strong> skin tone with crisp contrast and effortless elegance.
+                </p>
+            </div>
         </div>
 
-        <div style="width: 340px; height: 420px; margin: 0 auto; display: flex; justify-content: center; align-items: center;">
-            <img src="{{ image_path }}" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0px 15px 30px rgba(0,0,0,0.4));" alt="{{ color.name }} Drape">
-        </div>
+        <!-- BOTTOM HALF DRAPE (SWATCH 2) -->
+        {% if sw2 %}
+        <div style="height: 144mm; background-color: {{ sw2.hex }}; color: #FFFFFF; padding: 15px 25px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; position: relative;">
+            <div style="background: rgba(0,0,0,0.65); padding: 6px 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);">
+                <span style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #CBD5E1;">CHROMATYPE Virtual Drape • Color {{ i + 2 }} of {{ palette|length }}</span>
+                <h3 style="font-size: 18px; margin: 1px 0 0 0; text-transform: uppercase; letter-spacing: 1px; color: #FFFFFF;">{{ sw2.name }}</h3>
+                <span style="font-size: 10px; opacity: 0.95; font-weight: 700; letter-spacing: 1px; color: #F1F5F9;">HEX: {{ sw2.hex }}</span>
+            </div>
 
-        <div style="background: rgba(0,0,0,0.65); padding: 14px 22px; border-radius: 12px; max-width: 500px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.2);">
-            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #F8FAFC;">
-                <strong>Virtual Color Harmony:</strong> Wearing <strong>{{ color.name }}</strong> near your face softens shadows and highlights your natural <strong>{{ sub_season }}</strong> glow. Best used for tops, blazers, scarves, and accessories.
-            </p>
-        </div>
+            <div style="height: 170px; display: flex; justify-content: center; align-items: center; margin: 4px 0;">
+                <img src="{{ image_path }}" style="max-height: 165px; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.45));" alt="{{ sw2.name }}">
+            </div>
 
-        <div class="footer-page" style="border-top: 1px solid rgba(255,255,255,0.3); color: #F1F5F9;">
-            <span>CHROMATYPE Studio • Draping Swatch {{ loop.index }}</span>
-            <span>Page {{ loop.index + 4 }} of {{ palette|length + 16 }}</span>
+            <div style="background: rgba(0,0,0,0.65); padding: 6px 16px; border-radius: 8px; max-width: 480px; border: 1px solid rgba(255,255,255,0.2);">
+                <p style="margin: 0; font-size: 10.5px; line-height: 1.3; color: #F8FAFC;">
+                    <strong>Primary Harmony:</strong> <strong>{{ sw2.name }}</strong> illuminates your natural <strong>{{ sub_season }}</strong> skin tone with crisp contrast and effortless elegance.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="footer-page" style="position: absolute; bottom: 4px; right: 20px; background: rgba(0,0,0,0.7); padding: 2px 10px; border-radius: 4px; font-size: 8px; color: #FFFFFF;">
+            <span>CHROMATYPE Studio • Page {{ ((i / 2) + 5)|int }}</span>
         </div>
     </div>
     {% endfor %}
