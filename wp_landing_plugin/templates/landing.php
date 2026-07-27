@@ -270,7 +270,7 @@ tailwind.config = {
 <nav class="sticky top-0 z-40 bg-brand-black/90 backdrop-blur-md border-b border-brand-border/60">
   <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
     <a href="#" class="flex items-center gap-2.5">
-      <img src="http://chromatype.me/img/logo-1784993471.jpg" alt="CHROMATYPE Studio" class="h-10 w-auto object-contain rounded-md">
+      <div class="bg-white/95 px-3 py-1.5 rounded-xl shadow-md border border-brand-border/40 inline-flex items-center"><img src="http://chromatype.me/img/logo-1784993471.jpg" alt="CHROMATYPE Studio" class="h-7 w-auto object-contain"></div>
     </a>
     
     <div class="hidden md:flex items-center gap-8 text-sm font-medium text-brand-light">
@@ -612,7 +612,7 @@ tailwind.config = {
 <!-- Footer -->
 <footer class="border-t border-brand-border py-12 bg-brand-black">
   <div class="max-w-6xl mx-auto px-6 text-center text-brand-muted text-sm">
-    <div class="flex justify-center items-center gap-2 mb-4"><img src="http://chromatype.me/img/logo-1784993471.jpg" alt="CHROMATYPE Studio" class="h-10 w-auto object-contain rounded-md"></div>
+    <div class="flex justify-center items-center gap-2 mb-4"><div class="bg-white/95 px-3 py-1.5 rounded-xl shadow-md border border-brand-border/40 inline-flex items-center"><img src="http://chromatype.me/img/logo-1784993471.jpg" alt="CHROMATYPE Studio" class="h-7 w-auto object-contain"></div></div>
     <p class="mb-4">CHROMATYPE Proprietary CIELAB 3D Spectrophotometric Color Analysis Engine.</p>
     <p class="text-xs text-brand-muted/60">&copy; 2026 CHROMATYPE Studio (chromatype.me & color-analysis.shop). All rights reserved.</p>
   </div>
@@ -693,13 +693,17 @@ function selectMode(mode) {
 }
 
 function checkFormReady() {
-  const name = document.getElementById('userName').value.trim();
   const email = document.getElementById('userEmail').value.trim();
   const btn = document.getElementById('submitBtn');
-  const ready = name && email && uploadedFile;
+  // Unlock button as long as photo is selected (and email if free mode)
+  const ready = uploadedFile && (currentMode !== 'free' || email !== '');
   btn.disabled = !ready;
   if (!ready) {
-    document.getElementById('submitText').textContent = 'Upload a photo to continue';
+    if (!uploadedFile) {
+      document.getElementById('submitText').textContent = 'Upload a photo to continue';
+    } else {
+      document.getElementById('submitText').textContent = 'Enter email to receive report';
+    }
   } else if (currentMode === 'free') {
     document.getElementById('submitText').textContent = `Get FREE Color Analysis (${freeSessionsLeft} Spots Left)`;
   } else {
