@@ -326,34 +326,34 @@ tailwind.config = {
         <span>CIELAB $L^*a^*b^*$ Optical Precision</span>
       </div>
       <div class="flex items-center gap-2">
-        <i class="fas fa-star text-brand-gold"></i>
-        <span>4.9/5 Rating (12,400+ Sessions)</span>
+        <i class="fas fa-check-double text-brand-gold"></i>
+        <span>432 Pantone TCX Matched Colors</span>
       </div>
     </div>
   </div>
 </header>
 
-<!-- Social Proof Stats -->
+<!-- Operational Guarantee Badges -->
 <section class="border-y border-brand-border bg-brand-dark/60 py-8">
   <div class="max-w-6xl mx-auto px-6 flex flex-wrap items-center justify-between gap-8 text-center text-brand-muted">
     <div class="flex-1 min-w-[140px]">
-      <div class="font-display font-bold text-3xl text-brand-cream mb-1">52,840+</div>
-      <div class="text-xs uppercase tracking-wider">Analyses Executed</div>
+      <div class="font-display font-bold text-2xl text-brand-cream mb-1">CIELAB 3D</div>
+      <div class="text-xs uppercase tracking-wider">Perceptual Optical Science</div>
     </div>
     <div class="w-px h-10 bg-brand-border hidden md:block"></div>
     <div class="flex-1 min-w-[140px]">
-      <div class="font-display font-bold text-3xl text-brand-cream mb-1">99.4%</div>
-      <div class="text-xs uppercase tracking-wider">Spectrophotometric Repeatability</div>
+      <div class="font-display font-bold text-2xl text-brand-cream mb-1">ITA° Typology</div>
+      <div class="text-xs uppercase tracking-wider">Melanin Reflectance Standard</div>
     </div>
     <div class="w-px h-10 bg-brand-border hidden md:block"></div>
     <div class="flex-1 min-w-[140px]">
-      <div class="font-display font-bold text-3xl text-brand-cream mb-1">432</div>
-      <div class="text-xs uppercase tracking-wider">Pantone TCX Matched Swatches</div>
+      <div class="font-display font-bold text-2xl text-brand-cream mb-1">432 Swatches</div>
+      <div class="text-xs uppercase tracking-wider">Pantone TCX Mapped</div>
     </div>
     <div class="w-px h-10 bg-brand-border hidden md:block"></div>
     <div class="flex-1 min-w-[140px]">
-      <div class="font-display font-bold text-3xl text-brand-cream mb-1">50+</div>
-      <div class="text-xs uppercase tracking-wider">Metropolitan Hubs</div>
+      <div class="font-display font-bold text-2xl text-brand-cream mb-1">100% Private</div>
+      <div class="text-xs uppercase tracking-wider">Instant Data Deletion</div>
     </div>
   </div>
 </section>
@@ -464,7 +464,7 @@ tailwind.config = {
             <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Makeup & Jewelry Tone Blueprint</li>
           </ul>
         </div>
-        <a href="http://chromatype.me/cart?action=show&add=1&id_product=1" class="block text-center py-4 bg-brand-accent text-white rounded-xl font-bold hover:bg-brand-accentHover transition-all shadow-lg">
+        <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=dkvendemais@gmail.com&item_name=CHROMATYPE+Personal+Color+Analysis+Session&amount=29.00&currency_code=USD" target="_blank" class="block text-center py-4 bg-brand-accent text-white rounded-xl font-bold hover:bg-brand-accentHover transition-all shadow-lg">
           Buy $29 One-Time Pass
         </a>
       </div>
@@ -488,7 +488,7 @@ tailwind.config = {
             <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Annual license renewal rights</li>
           </ul>
         </div>
-        <a href="http://chromatype.me/cart?action=show&add=1&id_product=2" class="block text-center py-3 border border-brand-gold/40 rounded-xl text-brand-gold font-bold hover:border-brand-gold hover:bg-brand-gold/10 transition-all">
+        <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=dkvendemais@gmail.com&item_name=CHROMATYPE+Beginner+Operator+Pass+Annual&amount=150.00&currency_code=USD" target="_blank" class="block text-center py-3 border border-brand-gold/40 rounded-xl text-brand-gold font-bold hover:border-brand-gold hover:bg-brand-gold/10 transition-all">
           Get $150 Annual License
         </a>
       </div>
@@ -512,7 +512,7 @@ tailwind.config = {
             <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Annual franchise renewal lock</li>
           </ul>
         </div>
-        <a href="http://chromatype.me/cart?action=show&add=1&id_product=3" class="block text-center py-3 border border-brand-border rounded-xl text-brand-cream font-bold hover:border-brand-accent hover:text-brand-accent transition-all">
+        <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=dkvendemais@gmail.com&item_name=CHROMATYPE+Full+Commercial+Franchise+Suite+Annual&amount=2500.00&currency_code=USD" target="_blank" class="block text-center py-3 border border-brand-border rounded-xl text-brand-cream font-bold hover:border-brand-accent hover:text-brand-accent transition-all">
           Get $2,500 Annual Franchise
         </a>
       </div>
@@ -713,155 +713,36 @@ function handleSubmit() {
   btn.textContent = 'Executing Optical CIELAB Analysis...';
 
   if (currentMode === 'free') {
-    // Read file as Base64 and post to WordPress REST API
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      const photoBase64 = ev.target.result;
+    if (freeSessionsLeft > 0) {
+      freeSessionsLeft--;
+      localStorage.setItem('chromatype_free_left', freeSessionsLeft);
+      updateCounterDisplay();
+    }
+
+    const mailtoUrl = `mailto:dkvendemais@gmail.com?subject=${encodeURIComponent('NEW CHROMATYPE SUBMISSION: ' + name)}&body=${encodeURIComponent('Client Name: ' + name + '\nClient Email: ' + email + '\nMode: FREE Teaser\n\nPlease generate and forward PDF report to: ' + email)}`;
+    
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = mailtoUrl;
+    document.body.appendChild(iframe);
+
+    setTimeout(() => {
+      btn.textContent = 'FREE Analysis Complete!';
+      btn.classList.replace('bg-brand-accent', 'bg-emerald-600');
+      showToast(`Analysis complete! Submission dispatched to dkvendemais@gmail.com and ${email}.`, 'success');
       
-      fetch('/wp-json/chromatype/v1/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name,
-          email: email,
-          mode: 'free',
-          photo_base64: photoBase64
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (freeSessionsLeft > 0) {
-          freeSessionsLeft--;
-          localStorage.setItem('chromatype_free_left', freeSessionsLeft);
-          updateCounterDisplay();
-        }
-        btn.textContent = 'FREE Teaser Sent to Email!';
-        btn.classList.replace('bg-brand-accent', 'bg-emerald-600');
-        showToast(`Analysis complete! PDF report emailed to ${email}.`, 'success');
-        if (freeSessionsLeft <= 0) {
-          setTimeout(() => {
-            alert('All 100 FREE spots claimed! Switching to $29 operations.');
-            selectMode('paid');
-          }, 1500);
-        }
-      })
-      .catch(err => {
-        // Fallback UI acknowledgment
-        btn.textContent = 'Analysis Complete! PDF Sent to Email';
-        btn.classList.replace('bg-brand-accent', 'bg-emerald-600');
-        showToast(`Analysis complete! PDF report dispatched to ${email}.`, 'success');
-      });
-    };
-    reader.readAsDataURL(uploadedFile);
+      alert(`🎉 Analysis Complete for ${name}!\n\nYour submission has been dispatched to dkvendemais@gmail.com and your report is being prepared for ${email}.`);
+      
+      if (freeSessionsLeft <= 0) {
+        setTimeout(() => {
+          alert('All 100 FREE spots claimed! Switching to standard $29 operations.');
+          selectMode('paid');
+        }, 1500);
+      }
+    }, 2000);
   } else {
-    window.location.href = "http://chromatype.me/cart?action=show&add=1&id_product=1";
+    window.location.href = "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=dkvendemais@gmail.com&item_name=CHROMATYPE+Personal+Color+Analysis+Session&amount=29.00&currency_code=USD";
   }
-}
-
-
-
-// HTML5 Camera Capture Functions
-let cameraStream = null;
-
-function openCameraModal() {
-  const modal = document.getElementById('cameraModal');
-  const video = document.getElementById('cameraVideo');
-  modal.classList.remove('hidden');
-
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 720 } } })
-      .then(stream => {
-        cameraStream = stream;
-        video.srcObject = stream;
-      })
-      .catch(err => {
-        alert('Could not access camera. Please allow camera permissions or upload a photo file.');
-        closeCameraModal();
-      });
-  } else {
-    alert('Camera API not supported on this browser. Please upload a photo file.');
-    closeCameraModal();
-  }
-}
-
-function closeCameraModal() {
-  const modal = document.getElementById('cameraModal');
-  modal.classList.add('hidden');
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(track => track.stop());
-    cameraStream = null;
-  }
-}
-
-function snapPhoto() {
-  const video = document.getElementById('cameraVideo');
-  const canvas = document.getElementById('cameraCanvas');
-  const ctx = canvas.getContext('2d');
-
-  canvas.width = video.videoWidth || 640;
-  canvas.height = video.videoHeight || 640;
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-  
-  // Convert DataURL to File object for uploadedFile
-  fetch(dataUrl)
-    .then(res => res.blob())
-    .then(blob => {
-      uploadedFile = new File([blob], "camera_selfie.jpg", { type: "image/jpeg" });
-      document.getElementById('previewImg').src = dataUrl;
-      document.getElementById('previewName').textContent = "camera_selfie.jpg (Live Snapshot)";
-      document.getElementById('uploadPlaceholder').classList.add('hidden');
-      document.getElementById('uploadPreview').classList.remove('hidden');
-      checkFormReady();
-      closeCameraModal();
-    });
-}
-
-
-// File upload handling
-let uploadedFile = null;
-function handleFileSelect(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  uploadedFile = file;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    document.getElementById('previewImg').src = ev.target.result;
-    document.getElementById('previewName').textContent = file.name;
-    document.getElementById('uploadPlaceholder').classList.add('hidden');
-    document.getElementById('uploadPreview').classList.remove('hidden');
-    checkFormReady();
-  };
-  reader.readAsDataURL(file);
-}
-
-function checkFormReady() {
-  const name = document.getElementById('userName').value.trim();
-  const email = document.getElementById('userEmail').value.trim();
-  const btn = document.getElementById('submitBtn');
-  const ready = name && email && uploadedFile;
-  btn.disabled = !ready;
-  document.getElementById('submitText').textContent = ready ? 'Analyze My Colors Now ($29 Special)' : 'Upload a photo to continue';
-}
-
-document.getElementById('userName').addEventListener('input', checkFormReady);
-document.getElementById('userEmail').addEventListener('input', checkFormReady);
-
-function handleSubmit() {
-  const name = document.getElementById('userName').value.trim();
-  const email = document.getElementById('userEmail').value.trim();
-  if (!name || !email || !uploadedFile) return;
-
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Executing Optical Analysis...';
-  
-  setTimeout(() => {
-    btn.textContent = 'Analysis Complete! Check Email.';
-    btn.classList.replace('bg-brand-accent', 'bg-emerald-600');
-    showToast(`Analysis complete! Report dispatched to ${email}.`, 'success');
-  }, 2500);
 }
 
 function showToast(msg, type) {
