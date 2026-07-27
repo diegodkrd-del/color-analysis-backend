@@ -3,7 +3,7 @@
  * Plugin Name: CHROMATYPE Landing Page Studio
  * Plugin URI: https://chromatype.me/
  * Description: Standalone production landing page template for CHROMATYPE CIELAB 3D Color Analysis with $29 launch offer, live camera capture, direct PayPal links, and CTA slide-in modal.
- * Version: 4.0.0
+ * Version: 4.5.0
  * Author: CHROMATYPE Studio
  * Author URI: https://chromatype.me/
  */
@@ -580,27 +580,31 @@ tailwind.config = {
       <div class="mb-6">
         <label class="block text-brand-light text-sm font-medium mb-2">Provide Your Selfie (Natural Daylight)</label>
         
+        <!-- Action Buttons -->
         <div class="grid grid-cols-2 gap-3 mb-3">
-          <button type="button" onclick="openCameraModal()" class="py-3 px-4 bg-brand-dark border border-brand-border rounded-xl text-brand-cream font-semibold text-xs hover:border-brand-accent transition-colors flex items-center justify-center gap-2">
+          <button type="button" onclick="openCameraModal()" class="py-3 px-4 bg-brand-accent/20 border border-brand-accent rounded-xl text-brand-cream font-semibold text-xs hover:bg-brand-accent/30 transition-all flex items-center justify-center gap-2">
             <i class="fas fa-camera text-brand-accent text-sm"></i> Take Live Selfie
           </button>
-          <button type="button" onclick="document.getElementById('photoInput').click()" class="py-3 px-4 bg-brand-dark border border-brand-border rounded-xl text-brand-cream font-semibold text-xs hover:border-brand-accent transition-colors flex items-center justify-center gap-2">
-            <i class="fas fa-folder-open text-brand-gold text-sm"></i> Upload Photo File
+          <button type="button" onclick="triggerFileSelect()" class="py-3 px-4 bg-brand-card border border-brand-border rounded-xl text-brand-cream font-semibold text-xs hover:border-brand-accent transition-all flex items-center justify-center gap-2">
+            <i class="fas fa-folder-open text-brand-gold text-sm"></i> Browse Photo File
           </button>
         </div>
 
-        <div id="uploadZone" class="border-2 border-dashed border-brand-border rounded-xl p-6 text-center cursor-pointer hover:border-brand-accent transition-colors" onclick="document.getElementById('photoInput').click()">
+        <!-- Big Drag & Drop Zone -->
+        <div id="uploadZone" class="border-2 border-dashed border-brand-accent/50 bg-brand-dark/80 rounded-xl p-6 text-center cursor-pointer hover:border-brand-accent transition-all mb-3" onclick="triggerFileSelect()">
           <div id="uploadPlaceholder">
-            <i class="fas fa-cloud-arrow-up text-2xl text-brand-muted mb-2"></i>
-            <p class="text-brand-light text-xs mb-1">Click to browse or drag & drop image here</p>
-            <p class="text-brand-muted text-[10px]">JPG or PNG under 10MB — no filters, natural daylight</p>
+            <i class="fas fa-cloud-arrow-up text-3xl text-brand-accent mb-2"></i>
+            <p class="text-brand-cream text-sm font-medium mb-1">Click anywhere here to select your photo</p>
+            <p class="text-brand-muted text-xs">JPG or PNG under 10MB — natural daylight</p>
           </div>
           <div id="uploadPreview" class="hidden">
-            <img id="previewImg" class="max-h-44 mx-auto rounded-lg mb-2 object-cover" alt="Preview">
-            <p id="previewName" class="text-brand-light text-xs font-mono"></p>
+            <img id="previewImg" class="max-h-44 mx-auto rounded-lg mb-2 object-cover border border-brand-border" alt="Preview">
+            <p id="previewName" class="text-brand-accent text-xs font-mono font-bold"></p>
           </div>
         </div>
-        <input type="file" id="photoInput" accept="image/jpeg,image/png" class="hidden" onchange="handleFileSelect(event)">
+
+        <!-- Native File Input (Always Accessible) -->
+        <input type="file" id="photoInput" accept="image/jpeg,image/png" class="w-full text-xs text-brand-light bg-brand-dark border border-brand-border rounded-lg p-2 cursor-pointer" onchange="handleFileSelect(event)">
       </div>
 
       <!-- Submit CTA Button -->
