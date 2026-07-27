@@ -433,7 +433,7 @@ tailwind.config = {
             <span class="text-brand-muted text-sm font-medium">/ one-time</span>
             <span class="text-brand-muted text-sm line-through ml-2">$199</span>
           </div>
-          <p class="text-brand-light text-xs font-semibold text-brand-gold mb-6">✓ One-Time Payment — Lifetime Access to Digital Files</p>
+          <p class="text-brand-light text-xs font-semibold text-brand-gold mb-6">✓ One-Time Payment — One-Time Download Only of Digital Files</p>
           <ul class="space-y-3 mb-8 text-sm text-brand-light">
             <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>12 Season CIELAB Spectrophotometric Analysis</li>
             <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>52-Page Master Dossier PDF (Instant Download)</li>
