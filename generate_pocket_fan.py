@@ -3,35 +3,82 @@ import jinja2
 from jinja2 import Environment, FileSystemLoader
 from pdf_generator import SUBSEASON_PALETTES, get_base64_image
 import subprocess
+import cv2
+import numpy as np
+
+def hex_to_rgb(hex_str):
+    hex_str = hex_str.lstrip('#')
+    return tuple(int(hex_str[i:i+2], 16) for i in (0, 2, 4))
+
+def rgb_to_hex(rgb):
+    return '#{:02X}{:02X}{:02X}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+
+def hex_to_lab(hex_str):
+    rgb = np.uint8([[list(hex_to_rgb(hex_str))]])
+    lab = cv2.cvtColor(rgb, cv2.COLOR_RGB2LAB)
+    return lab[0][0]
+
+def lab_to_hex(lab):
+    lab_pixel = np.uint8([[lab]])
+    rgb = cv2.cvtColor(lab_pixel, cv2.COLOR_LAB2RGB)
+    return rgb_to_hex(rgb[0][0])
+
+def get_intermediate_color(hex1, hex2):
+    """Calculates the exact CIELAB perceptual midpoint between hex1 and hex2."""
+    try:
+        lab1 = hex_to_lab(hex1).astype(float)
+        lab2 = hex_to_lab(hex2).astype(float)
+        mid_lab = (lab1 + lab2) / 2.0
+        return lab_to_hex(mid_lab.astype(np.uint8))
+    except Exception:
+        return hex1
 
 def create_pocket_fan_html(output_html_path: str):
     """
-    Generates a print-ready 3-column x 2-row grid layout (exactly 6 cards per A4 page).
-    Each card features 6 curated color swatches, rivet hole guidelines, and trim borders.
-    Total: 12 Sub-Seasons x 36 Colors = 432 Swatches across 72 Swatch Cards (12 A4 pages).
+    Generates a print-ready 3-column x 2-row grid layout (6 cards per A4 page).
+    Each card leaf features 3-TIER STACKED SWATCH BLOCKS:
+    - Top Swatch: Primary Color A
+    - Middle Swatch: CIELAB Midpoint Intermediate Color (Exclusive to CHROMATYPE!)
+    - Bottom Swatch: Harmonic Accent Color B
+    Total: 12 Sub-Seasons x 54-72 Colors = 600+ Color Swatch Tones!
     """
     all_seasons_data = []
     
     for subseason_name, palette in SUBSEASON_PALETTES.items():
         colors = palette.get('colors', [])
-        # Group colors into cards of 6 swatches per card (6 swatches x 6 cards = 36 colors per subseason)
-        cards = []
-        for i in range(0, len(colors), 6):
-            cards.append(colors[i:i+6])
+        # Group colors into pairs, adding intermediate midpoint color between every pair
+        tiered_cards = []
+        for i in range(0, len(colors) - 1, 2):
+            c1 = colors[i]
+            c2 = colors[i+1]
+            mid_hex = get_intermediate_color(c1['hex'], c2['hex'])
+            mid_color = {
+                'name': f"{c1['name'].split()[0]} {c2['name'].split()[-1]} Tint",
+                'hex': mid_hex,
+                'pantone': '16-1539 TCX (Graded Midpoint)'
+            }
+            tiered_cards.append({
+                'top': c1,
+                'mid': mid_color,
+                'bottom': c2
+            })
+            
+        # Group 3 tiered blocks per printed card (6 printed cards per subseason)
+        cards_for_sub = []
+        for i in range(0, len(tiered_cards), 3):
+            cards_for_sub.append(tiered_cards[i:i+3])
             
         all_seasons_data.append({
             'name': subseason_name,
             'header_color': palette.get('header_color', '#333333'),
-            'accent_color': palette.get('accent', '#E29578'),
-            'bg_color': palette.get('bg', '#FFFFFF'),
-            'cards': cards
+            'cards': cards_for_sub
         })
         
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CHROMATYPE — 6 Cards Per Page Print-Ready Pocket Swatch Fan</title>
+    <title>CHROMATYPE — 3-Tier Gradient Pocket Swatch Fan (Print Ready)</title>
     <style>
         @page {{
             size: A4 portrait;
@@ -63,7 +110,7 @@ def create_pocket_fan_html(output_html_path: str):
             border: 1px dashed #CBD5E1;
             border-radius: 6mm;
             box-sizing: border-box;
-            padding: 3mm 4mm;
+            padding: 3mm 3.5mm;
             position: relative;
             background: #FFFFFF;
             display: flex;
@@ -72,7 +119,7 @@ def create_pocket_fan_html(output_html_path: str):
         }}
         .rivet-hole {{
             position: absolute;
-            top: 3.5mm;
+            top: 3mm;
             left: 50%;
             transform: translateX(-50%);
             width: 4.5mm;
@@ -82,7 +129,7 @@ def create_pocket_fan_html(output_html_path: str):
             background: #F1F5F9;
         }}
         .card-header {{
-            margin-top: 6.5mm;
+            margin-top: 6mm;
             text-align: center;
             border-bottom: 2px solid #E2E8F0;
             padding-bottom: 1.5mm;
@@ -99,25 +146,29 @@ def create_pocket_fan_html(output_html_path: str):
             display: flex;
             flex-direction: column;
             justify-content: space-around;
-            margin-top: 2mm;
-            gap: 1.5mm;
+            margin-top: 1.5mm;
+            gap: 2mm;
         }}
-        .swatch-item {{
-            height: 13mm;
-            border-radius: 2.5mm;
+        .tier-block {{
+            border-radius: 3mm;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.15);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }}
+        .tier-sub-swatch {{
+            height: 9mm;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 3mm;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            padding: 0 2.5mm;
         }}
         .swatch-name {{
-            font-size: 8px;
+            font-size: 7.5px;
             font-weight: 700;
             text-transform: uppercase;
         }}
         .swatch-hex {{
-            font-size: 7px;
+            font-size: 6.5px;
             font-weight: 700;
             font-family: monospace;
         }}
@@ -135,15 +186,15 @@ def create_pocket_fan_html(output_html_path: str):
 <body>
 """
 
-    # Generate Cards (3 cards per row x 2 rows = 6 cards per A4 page)
+    # Generate Flat Cards List (6 cards per A4 page)
     all_cards_flat = []
     for sub in all_seasons_data:
-        for idx, card_colors in enumerate(sub['cards']):
+        for idx, tier_group in enumerate(sub['cards']):
             all_cards_flat.append({
                 'season': sub['name'],
                 'header_color': sub['header_color'],
                 'card_num': idx + 1,
-                'colors': card_colors
+                'tier_blocks': tier_group
             })
 
     for page_idx in range(0, len(all_cards_flat), 6):
@@ -158,28 +209,31 @@ def create_pocket_fan_html(output_html_path: str):
                 </div>
                 <div class="card-swatches">
             """
-            for sw in card['colors']:
-                # Calculate contrast text color
-                hex_clean = sw['hex'].lstrip('#')
-                r = int(hex_clean[0:2], 16)
-                g = int(hex_clean[2:4], 16)
-                b = int(hex_clean[4:6], 16)
-                lum = (0.299 * r + 0.587 * g + 0.114 * b)
-                text_col = '#000000' if lum > 160 else '#FFFFFF'
-                pantone_code = sw.get('pantone', '17-1563 TCX')
-
-                html_content += f"""
-                    <div class="swatch-item" style="background-color: {sw['hex']};">
-                        <span class="swatch-name" style="color: {text_col};">{sw['name']}</span>
-                        <div style="text-align: right;">
-                            <div class="swatch-hex" style="color: {text_col};">{sw['hex']}</div>
-                            <div style="font-size: 5.5px; font-weight: bold; color: {text_col}; opacity: 0.9;">PANTONE {pantone_code.split()[0]}</div>
+            for block in card['tier_blocks']:
+                # Render 3 sub-swatches (top, mid, bottom) inside each tier block
+                html_content += '<div class="tier-block">\n'
+                for pos_key in ['top', 'mid', 'bottom']:
+                    sw = block[pos_key]
+                    hex_clean = sw['hex'].lstrip('#')
+                    r = int(hex_clean[0:2], 16)
+                    g = int(hex_clean[2:4], 16)
+                    b = int(hex_clean[4:6], 16)
+                    lum = (0.299 * r + 0.587 * g + 0.114 * b)
+                    text_col = '#000000' if lum > 160 else '#FFFFFF'
+                    is_mid = (pos_key == 'mid')
+                    badge_text = "★ MIDPOINT" if is_mid else sw['hex']
+                    
+                    html_content += f"""
+                        <div class="tier-sub-swatch" style="background-color: {sw['hex']};">
+                            <span class="swatch-name" style="color: {text_col};">{sw['name']}</span>
+                            <span class="swatch-hex" style="color: {text_col};">{badge_text}</span>
                         </div>
-                    </div>
-                """
+                    """
+                html_content += '</div>\n'
+
             html_content += f"""
                 </div>
-                <div class="card-footer">CHROMATYPE • SWATCH #{card['card_num']}</div>
+                <div class="card-footer">CHROMATYPE 3-TIER • LEAF #{card['card_num']}</div>
             </div>
             """
         html_content += '</div>\n'
@@ -219,7 +273,7 @@ def generate_pocket_fan_pdf(output_pdf_path: str) -> str:
     return output_pdf_path
 
 if __name__ == '__main__':
-    target_pdf = r"C:\Users\dkven\Desktop\CHROMATYPE_Reports\CHROMATYPE_Pocket_Color_Fan_12Seasons_PrintReady.pdf"
-    print("Generating 3-Column x 2-Row Grid (6 Cards per Page) Pocket Swatch Fan PDF...")
+    target_pdf = r"C:\Users\dkven\Desktop\CHROMATYPE_Reports\CHROMATYPE_3Tier_Gradient_Pocket_Fan_PrintReady.pdf"
+    print("Generating CHROMATYPE 3-Tier Gradient Pocket Swatch Fan PDF (with CIELAB Intermediate Midpoint Colors)...")
     generate_pocket_fan_pdf(target_pdf)
     print(f"Done! Saved to: {target_pdf}")
