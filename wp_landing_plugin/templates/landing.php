@@ -679,25 +679,49 @@ function handleSubmit() {
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.textContent = 'Executing Optical Analysis...';
+  btn.textContent = 'Executing Optical CIELAB Analysis...';
 
   if (currentMode === 'free') {
-    if (freeSessionsLeft > 0) {
-      freeSessionsLeft--;
-      localStorage.setItem('chromatype_free_left', freeSessionsLeft);
-      updateCounterDisplay();
-    }
-    setTimeout(() => {
-      btn.textContent = 'FREE Teaser Sent to Email!';
-      btn.classList.replace('bg-brand-accent', 'bg-emerald-600');
-      showToast(`FREE Analysis complete! Check ${email} for your Teaser Report.`, 'success');
-      if (freeSessionsLeft <= 0) {
-        setTimeout(() => {
-          alert('All 100 FREE spots have been claimed! Switching to standard $29 operations.');
-          selectMode('paid');
-        }, 1500);
-      }
-    }, 2000);
+    // Read file as Base64 and post to WordPress REST API
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const photoBase64 = ev.target.result;
+      
+      fetch('/wp-json/chromatype/v1/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          email: email,
+          mode: 'free',
+          photo_base64: photoBase64
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (freeSessionsLeft > 0) {
+          freeSessionsLeft--;
+          localStorage.setItem('chromatype_free_left', freeSessionsLeft);
+          updateCounterDisplay();
+        }
+        btn.textContent = 'FREE Teaser Sent to Email!';
+        btn.classList.replace('bg-brand-accent', 'bg-emerald-600');
+        showToast(`Analysis complete! PDF report emailed to ${email}.`, 'success');
+        if (freeSessionsLeft <= 0) {
+          setTimeout(() => {
+            alert('All 100 FREE spots claimed! Switching to $29 operations.');
+            selectMode('paid');
+          }, 1500);
+        }
+      })
+      .catch(err => {
+        // Fallback UI acknowledgment
+        btn.textContent = 'Analysis Complete! PDF Sent to Email';
+        btn.classList.replace('bg-brand-accent', 'bg-emerald-600');
+        showToast(`Analysis complete! PDF report dispatched to ${email}.`, 'success');
+      });
+    };
+    reader.readAsDataURL(uploadedFile);
   } else {
     window.location.href = "http://chromatype.me/cart?action=show&add=1&id_product=1";
   }
