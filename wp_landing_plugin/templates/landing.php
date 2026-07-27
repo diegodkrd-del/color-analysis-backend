@@ -242,7 +242,7 @@ tailwind.config = {
 
 <!-- Sticky Announcement Bar -->
 <div class="bg-gradient-to-r from-brand-accent via-brand-gold to-brand-accent text-brand-black font-semibold text-xs py-2 px-4 text-center">
-  🚀 SPECIAL OPERATIONS LAUNCH: Save $170 Today — Personal Color Analysis for $29 (Regular Session Rate $199)
+  🎁 FREE LAUNCH OFFER: First 100 Customers Get FREE Teaser Analysis! (<span id="freeCounter">18</span> / 100 Free Spots Remaining)
 </div>
 
 <!-- Header Navigation -->
@@ -503,12 +503,22 @@ tailwind.config = {
 <section id="analyze" class="py-24 relative">
   <div class="max-w-2xl mx-auto px-6 relative z-10">
     <div class="text-center mb-12 reveal">
-      <span class="text-brand-accent text-sm font-semibold tracking-widest uppercase">Start Your Analysis</span>
-      <h2 class="font-display font-extrabold text-4xl md:text-5xl text-brand-cream mt-2 mb-3">Upload Your Photo</h2>
-      <p class="text-brand-light text-lg">Select your package, upload a selfie, receive your report by email.</p>
+      <span class="text-brand-accent text-sm font-semibold tracking-widest uppercase">Launch Promotion</span>
+      <h2 class="font-display font-extrabold text-4xl md:text-5xl text-brand-cream mt-2 mb-3">Try Free or Get Full $29 Dossier</h2>
+      <p class="text-brand-light text-lg">Upload your photo. First 100 users get a FREE 12-season sub-season classification!</p>
     </div>
 
     <div class="reveal bg-brand-card rounded-2xl border border-brand-border p-8 shadow-2xl">
+      <!-- Tier Selector: Free Teaser vs $29 Master -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <button type="button" id="btnModeFree" onclick="selectMode('free')" class="py-3 px-4 rounded-xl border-2 border-brand-accent bg-brand-accent/10 text-brand-cream font-bold text-xs sm:text-sm text-center transition-all">
+          🎁 FREE Launch Teaser<br><span class="text-[10px] text-brand-accent font-normal">(Sub-Season + 4 Colors)</span>
+        </button>
+        <button type="button" id="btnModePaid" onclick="selectMode('paid')" class="py-3 px-4 rounded-xl border-2 border-brand-border bg-brand-dark text-brand-light font-bold text-xs sm:text-sm text-center transition-all">
+          👑 Full $29 Master Package<br><span class="text-[10px] text-brand-muted font-normal">(52 Pages + Swatch Fan PDF)</span>
+        </button>
+      </div>
+
       <!-- Name -->
       <div class="mb-4">
         <label class="block text-brand-light text-sm font-medium mb-2">Full Name</label>
@@ -622,6 +632,77 @@ function toggleFAQ(i) {
   }
 }
 renderFAQ();
+
+
+let currentMode = 'free';
+let freeSessionsLeft = localStorage.getItem('chromatype_free_left') ? parseInt(localStorage.getItem('chromatype_free_left')) : 18;
+
+function updateCounterDisplay() {
+  const counterEl = document.getElementById('freeCounter');
+  if (counterEl) counterEl.textContent = freeSessionsLeft;
+}
+updateCounterDisplay();
+
+function selectMode(mode) {
+  currentMode = mode;
+  const btnFree = document.getElementById('btnModeFree');
+  const btnPaid = document.getElementById('btnModePaid');
+  if (mode === 'free') {
+    btnFree.className = "py-3 px-4 rounded-xl border-2 border-brand-accent bg-brand-accent/10 text-brand-cream font-bold text-xs sm:text-sm text-center transition-all";
+    btnPaid.className = "py-3 px-4 rounded-xl border-2 border-brand-border bg-brand-dark text-brand-light font-bold text-xs sm:text-sm text-center transition-all";
+  } else {
+    btnPaid.className = "py-3 px-4 rounded-xl border-2 border-brand-accent bg-brand-accent/10 text-brand-cream font-bold text-xs sm:text-sm text-center transition-all";
+    btnFree.className = "py-3 px-4 rounded-xl border-2 border-brand-border bg-brand-dark text-brand-light font-bold text-xs sm:text-sm text-center transition-all";
+  }
+  checkFormReady();
+}
+
+function checkFormReady() {
+  const name = document.getElementById('userName').value.trim();
+  const email = document.getElementById('userEmail').value.trim();
+  const btn = document.getElementById('submitBtn');
+  const ready = name && email && uploadedFile;
+  btn.disabled = !ready;
+  if (!ready) {
+    document.getElementById('submitText').textContent = 'Upload a photo to continue';
+  } else if (currentMode === 'free') {
+    document.getElementById('submitText').textContent = `Get FREE Color Analysis (${freeSessionsLeft} Spots Left)`;
+  } else {
+    document.getElementById('submitText').textContent = 'Get Full $29 Master Package';
+  }
+}
+
+function handleSubmit() {
+  const name = document.getElementById('userName').value.trim();
+  const email = document.getElementById('userEmail').value.trim();
+  if (!name || !email || !uploadedFile) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Executing Optical Analysis...';
+
+  if (currentMode === 'free') {
+    if (freeSessionsLeft > 0) {
+      freeSessionsLeft--;
+      localStorage.setItem('chromatype_free_left', freeSessionsLeft);
+      updateCounterDisplay();
+    }
+    setTimeout(() => {
+      btn.textContent = 'FREE Teaser Sent to Email!';
+      btn.classList.replace('bg-brand-accent', 'bg-emerald-600');
+      showToast(`FREE Analysis complete! Check ${email} for your Teaser Report.`, 'success');
+      if (freeSessionsLeft <= 0) {
+        setTimeout(() => {
+          alert('All 100 FREE spots have been claimed! Switching to standard $29 operations.');
+          selectMode('paid');
+        }, 1500);
+      }
+    }, 2000);
+  } else {
+    window.location.href = "http://chromatype.me/cart?action=show&add=1&id_product=1";
+  }
+}
+
 
 // File upload handling
 let uploadedFile = null;

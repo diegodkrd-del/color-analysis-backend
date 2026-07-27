@@ -498,3 +498,92 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
         with open(html_path, 'w', encoding='utf-8') as f:
             f.write(html_out)
         return html_path
+
+
+
+def generate_free_teaser_pdf(image_input, client_name="Valued Client", client_email="client@example.com", output_pdf_path=None):
+    """
+    Generates a 3-page Free Teaser Color Analysis Report for launch promotion.
+    Identifies the 12-season sub-season and presents 4 core signature swatches,
+    with an upsell to the full $29 Master Package.
+    """
+    skin_metrics = extract_skin_cielab(image_input)
+    subseason_name = skin_metrics['subseason']
+    palette = SUBSEASON_PALETTES.get(subseason_name, SUBSEASON_PALETTES['Dark Autumn'])
+    
+    if output_pdf_path is None:
+        out_dir = r"C:\Users\dkven\Desktop\CHROMATYPE_Reports"
+        os.makedirs(out_dir, exist_ok=True)
+        output_pdf_path = os.path.join(out_dir, f"CHROMATYPE_Free_Teaser_{subseason_name.replace(' ', '_')}.pdf")
+
+    teaser_html = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+    @page {{ size: A4 portrait; margin: 0; }}
+    body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin:0; padding:0; background:#0F172A; color:#FFFFFF; }}
+    .page {{ width: 210mm; height: 297mm; page-break-after: always; box-sizing: border-box; padding: 25mm 20mm; position: relative; background:#0F172A; }}
+    .logo {{ font-size: 24px; font-weight: 900; letter-spacing: 2px; color: #FFFFFF; text-align: center; margin-bottom: 20px; }}
+    .logo span {{ color: #E8734A; }}
+    .title {{ font-size: 28px; font-weight: 900; text-align: center; color: #E8734A; margin-bottom: 10px; text-transform: uppercase; }}
+    .subtitle {{ font-size: 14px; text-align: center; color: #94A3B8; margin-bottom: 30px; }}
+    .card {{ background: #1E293B; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 20px; }}
+    .swatch-grid {{ display: flex; gap: 15px; justify-content: center; margin-top: 15px; }}
+    .swatch-box {{ width: 70px; height: 70px; border-radius: 10px; border: 2px solid #FFFFFF; text-align: center; font-size: 9px; padding-top: 50px; box-sizing: border-box; font-weight: bold; text-shadow: 0 1px 2px #000; }}
+    .cta-box {{ background: linear-gradient(135deg, #E8734A, #D4A853); color: #000000; border-radius: 12px; padding: 20px; text-align: center; font-weight: bold; margin-top: 30px; }}
+</style>
+</head>
+<body>
+    <div class="page">
+        <div class="logo">CHROMA<span>TYPE</span></div>
+        <div class="title">FREE TEASER REPORT</div>
+        <div class="subtitle">Prepared for {client_name} ({client_email})</div>
+
+        <div class="card">
+            <h3 style="margin:0 0 10px 0; color:#E8734A;">IDENTIFIED SUB-SEASON: {subseason_name.upper()}</h3>
+            <p style="font-size:12px; color:#CBD5E1; line-height:1.5;">
+                Spectrophotometric Analysis complete. Your skin reflectance measures L*={skin_metrics['L']:.1f}, a*={skin_metrics['a']:.1f}, b*={skin_metrics['b']:.1f} with an Individual Typology Angle of ITA°={skin_metrics['ITA']:.1f}°.
+            </p>
+        </div>
+
+        <div class="card">
+            <h4 style="margin:0 0 10px 0; color:#FFFFFF;">Your 4 Core Teaser Signature Swatches:</h4>
+            <div class="swatch-grid">
+                <div class="swatch-box" style="background:{palette['colors'][0]['hex']};">{palette['colors'][0]['name']}</div>
+                <div class="swatch-box" style="background:{palette['colors'][1]['hex']};">{palette['colors'][1]['name']}</div>
+                <div class="swatch-box" style="background:{palette['colors'][2]['hex']};">{palette['colors'][2]['name']}</div>
+                <div class="swatch-box" style="background:{palette['colors'][3]['hex']};">{palette['colors'][3]['name']}</div>
+            </div>
+        </div>
+
+        <div class="cta-box">
+            <div style="font-size:18px; text-transform:uppercase;">Upgrade to the Full 52-Page Master Dossier</div>
+            <p style="font-size:11px; margin:8px 0 12px 0;">Unlock all 36 Virtual Face Drapes, Print-Ready 3-Tier Pocket Swatch Fan PDF, and Pantone TCX Codes.</p>
+            <a href="http://chromatype.me/cart?action=show&add=1&id_product=1" style="background:#000; color:#FFF; padding:10px 20px; border-radius:20px; text-decoration:none; display:inline-block; font-size:12px;">Get Full $29 Master Package</a>
+        </div>
+    </div>
+</body>
+</html>
+"""
+    temp_html = output_pdf_path.replace(".pdf", ".html")
+    with open(temp_html, 'w', encoding='utf-8') as f:
+        f.write(teaser_html)
+
+    import subprocess
+    edge_paths = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
+    ]
+    msedge = next((p for p in edge_paths if os.path.exists(p)), None)
+
+    if msedge:
+        subprocess.run([
+            msedge, "--headless", "--disable-gpu", "--no-pdf-header-footer",
+            f"--print-to-pdf={output_pdf_path}", temp_html
+        ], check=True)
+
+    if os.path.exists(temp_html):
+        os.remove(temp_html)
+
+    return output_pdf_path
