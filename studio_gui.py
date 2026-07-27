@@ -92,7 +92,7 @@ class ChromatypeStudioApp:
         # 3. Season Selection
         ttk.Label(form_frame, text="Seasonal Sub-Palette:", font=("Helvetica", 10, "bold")).grid(row=4, column=0, sticky="w", pady=2)
         
-        season_options = ["Auto-Detect (AI Algorithm)"] + list(SUBSEASON_PALETTES.keys())
+        season_options = ["Auto-Detect (Optical Algorithm)"] + list(SUBSEASON_PALETTES.keys())
         self.season_var = tk.StringVar(value=season_options[0])
         self.season_combo = ttk.Combobox(form_frame, textvariable=self.season_var, values=season_options, state="readonly", font=("Helvetica", 10))
         self.season_combo.grid(row=5, column=0, columnspan=2, sticky="ew", pady=(0, 10))
@@ -124,7 +124,7 @@ class ChromatypeStudioApp:
         chk_frame.grid(row=9, column=0, columnspan=2, pady=5, sticky="w")
         
         ttk.Checkbutton(chk_frame, text="Open PDF automatically after generation", variable=self.open_pdf_var).pack(anchor="w")
-        ttk.Checkbutton(chk_frame, text="Attempt AI Background Cutout (RemBG)", variable=self.remove_bg_var).pack(anchor="w")
+        ttk.Checkbutton(chk_frame, text="Attempt Optical Background Cutout (RemBG)", variable=self.remove_bg_var).pack(anchor="w")
         ttk.Checkbutton(chk_frame, text="Send PDF via Email automatically to client", variable=self.send_email_var).pack(anchor="w")
         
         # 5. SMTP Sender Settings Panel
@@ -276,7 +276,7 @@ class ChromatypeStudioApp:
             analysis_data = analyze_photo(image_path, apply_white_balance=True)
             
             # Manual Season Override
-            if selected_season != "Auto-Detect (AI Algorithm)":
+            if selected_season != "Auto-Detect (Optical Algorithm)":
                 analysis_data['sub_season'] = selected_season
                 if "Spring" in selected_season:
                     analysis_data['season'] = "Spring"
