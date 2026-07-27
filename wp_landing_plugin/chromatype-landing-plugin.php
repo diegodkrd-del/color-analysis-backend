@@ -3,7 +3,7 @@
  * Plugin Name: CHROMATYPE Landing Page & Conversion Studio
  * Plugin URI: https://chromatype.me/
  * Description: Production-ready landing page template for CHROMATYPE CIELAB 3D Color Analysis with $29 launch offer and high-converting CTA slide-in modal.
- * Version: 2.5.1
+ * Version: 2.6.0
  * Author: CHROMATYPE Studio
  * Author URI: https://chromatype.me/
  */
@@ -15,6 +15,8 @@ if (!defined('ABSPATH')) {
 class CHROMATYPE_Landing_Plugin {
     public function __construct() {
         add_shortcode('chromatype_landing_page', array($this, 'render_landing_page'));
+        add_shortcode('chromatype', array($this, 'render_landing_page'));
+        add_shortcode('chromatype_studio', array($this, 'render_landing_page'));
         add_filter('theme_page_templates', array($this, 'add_page_template'));
         add_filter('template_include', array($this, 'load_page_template'));
     }
@@ -43,7 +45,7 @@ class CHROMATYPE_Landing_Plugin {
         if (file_exists($template_path)) {
             include $template_path;
         } else {
-            echo '<div class="chromatype-error">CHROMATYPE Landing Page Template file missing.</div>';
+            echo '<div style="padding:20px; background:#1c1b19; color:#e8734a; font-weight:bold;">CHROMATYPE Template Loading Error. Please re-install plugin zip.</div>';
         }
         return ob_get_clean();
     }

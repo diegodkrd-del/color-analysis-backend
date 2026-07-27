@@ -1,6 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+
+
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CHROMATYPE — Proprietary Optical Personal Color Analysis | 12 Season Palette</title>
@@ -218,8 +218,8 @@ tailwind.config = {
     max-height: 300px;
   }
 </style>
-</head>
-<body class="bg-brand-black text-brand-cream">
+
+<div class="chromatype-root bg-brand-black text-brand-cream" style="margin-top:-30px; margin-left:-30px; margin-right:-30px;">
 
 <!-- Toast Notification -->
 <div id="toast" class="fixed bottom-6 left-6 z-50 px-6 py-4 rounded-xl bg-brand-card border border-brand-border text-brand-cream text-sm opacity-0 pointer-events-none transition-all duration-300"></div>
@@ -742,5 +742,5 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   }
 }
 </script>
-</body>
-</html>
+</div>
+
