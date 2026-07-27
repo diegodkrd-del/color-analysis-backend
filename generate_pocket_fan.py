@@ -166,11 +166,15 @@ def create_pocket_fan_html(output_html_path: str):
                 b = int(hex_clean[4:6], 16)
                 lum = (0.299 * r + 0.587 * g + 0.114 * b)
                 text_col = '#000000' if lum > 160 else '#FFFFFF'
+                pantone_code = sw.get('pantone', '17-1563 TCX')
 
                 html_content += f"""
                     <div class="swatch-item" style="background-color: {sw['hex']};">
                         <span class="swatch-name" style="color: {text_col};">{sw['name']}</span>
-                        <span class="swatch-hex" style="color: {text_col};">{sw['hex']}</span>
+                        <div style="text-align: right;">
+                            <div class="swatch-hex" style="color: {text_col};">{sw['hex']}</div>
+                            <div style="font-size: 5.5px; font-weight: bold; color: {text_col}; opacity: 0.9;">PANTONE {pantone_code.split()[0]}</div>
+                        </div>
                     </div>
                 """
             html_content += f"""
