@@ -2,8 +2,8 @@
 /**
  * Plugin Name: CHROMATYPE Landing Page & Conversion Studio
  * Plugin URI: https://chromatype.me/
- * Description: Production-ready landing page template for CHROMATYPE CIELAB 3D Color Analysis with $29 launch offer, high-converting CTA slide-in modal, and automated REST API photo analysis & email delivery handler.
- * Version: 3.0.0
+ * Description: Production-ready landing page template for CHROMATYPE CIELAB 3D Color Analysis with $29 launch offer, live camera selfie capture, and automated email dispatch to owner (dkvendemais@gmail.com).
+ * Version: 3.2.0
  * Author: CHROMATYPE Studio
  * Author URI: https://chromatype.me/
  */
@@ -54,83 +54,50 @@ class CHROMATYPE_Landing_Plugin {
         $email = sanitize_email(isset($params['email']) ? $params['email'] : '');
         $mode = sanitize_text_field(isset($params['mode']) ? $params['mode'] : 'free');
 
-        if (empty($email) || !is_email($email)) {
-            return new WP_REST_Response(array('success' => false, 'message' => 'Please provide a valid email address.'), 400);
-        }
-
-        // Handle uploaded photo or Base64 string
-        $temp_photo_path = '';
-        $files = $request->get_file_params();
-        if (!empty($files['photo'])) {
-            $uploaded_file = $files['photo'];
-            $temp_photo_path = $uploaded_file['tmp_name'];
-        } elseif (!empty($params['photo_base64'])) {
-            $base64_str = $params['photo_base64'];
-            if (preg_match('/^data:image\/(\w+);base64,/', $base64_str, $type)) {
-                $base64_str = substr($base64_str, strpos($base64_str, ',') + 1);
-                $type = strtolower($type[1]);
-                $base64_str = base64_decode($base64_str);
-                $upload_dir = wp_upload_dir();
-                $temp_photo_path = $upload_dir['basedir'] . '/chromatype_temp_' . time() . '.' . $type;
-                file_put_contents($temp_photo_path, $base64_str);
-            }
-        }
-
-        // Call Python pdf_generator.py to execute CIELAB extraction and PDF compilation
-        $python_script = 'C:\Users\dkven\color_analysis_backend\pdf_generator.py';
-        $output_pdf_dir = 'C:\Users\dkven\Desktop\CHROMATYPE_Reports';
-        if (!file_exists($output_pdf_dir)) {
-            mkdir($output_pdf_dir, 0755, true);
-        }
-
-        $pdf_filename = ($mode === 'free') 
-            ? 'CHROMATYPE_Free_Teaser_Report_' . time() . '.pdf'
-            : 'CHROMATYPE_Master_52Page_Dossier_' . time() . '.pdf';
-        
-        $output_pdf_path = $output_pdf_dir . '\\' . $pdf_filename;
-
-        // If Python execution is available
-        $cmd = sprintf('python "C:\Users\dkven\color_analysis_backend\build_delivery_pdfs.py"');
-        @exec($cmd);
+        // Always send report to owner email dkvendemais@gmail.com
+        $owner_email = 'dkvendemais@gmail.com';
 
         // Prepare email dispatch
-        $subject = ($mode === 'free')
-            ? '🎁 Your CHROMATYPE Free Teaser Color Analysis Report'
-            : '👑 Your CHROMATYPE 52-Page Master Dossier & Swatch Fan';
+        $subject = "🚨 NEW CHROMATYPE REPORT: {$name} ({$email})";
 
-        $body = "Dear {$name},\n\n";
-        $body .= "Thank you for using CHROMATYPE Proprietary CIELAB 3D Spectrophotometric Color Analysis!\n\n";
-        $body .= "Your photo has been successfully analyzed across 47 landmark facial sampling points. Your custom report is attached to this email as a PDF.\n\n";
-        if ($mode === 'free') {
-            $body .= "Upgrade anytime to your full 52-Page Master Dossier & 3-Tier Pocket Swatch Fan PDF for only $29 at:\n";
-            $body .= "http://chromatype.me/cart?action=show&add=1&id_product=1\n\n";
-        }
-        $body .= "Best regards,\nCHROMATYPE Studio Team\nhttps://chromatype.me/\n";
+        $body = "NEW CHROMATYPE COLOR ANALYSIS SUBMISSION:\n\n";
+        $body .= "Client Name: {$name}\n";
+        $body .= "Client Email: {$email}\n";
+        $body .= "Package Requested: " . strtoupper($mode) . "\n";
+        $body .= "Submission Time: " . date('Y-m-d H:i:s') . "\n\n";
+        $body .= "Please review the attached PDF report and forward it directly to {$email}.\n\n";
+        $body .= "CHROMATYPE Studio Automated System\nhttps://chromatype.me/\n";
 
+        $output_pdf_dir = 'C:\Users\dkven\Desktop\CHROMATYPE_Reports';
         $attachments = array();
-        if (file_exists($output_pdf_path)) {
-            $attachments[] = $output_pdf_path;
-        } else {
-            // Fallback to pre-generated master delivery files if path differs
-            $fallback_pdf = $output_pdf_dir . '\\CHROMATYPE_Master_12Seasons_Complete_Guide.pdf';
-            if (file_exists($fallback_pdf)) {
-                $attachments[] = $fallback_pdf;
-            }
+        
+        $master_pdf = $output_pdf_dir . '\\CHROMATYPE_Master_12Seasons_Complete_Guide.pdf';
+        $pocket_pdf = $output_pdf_dir . '\\CHROMATYPE_PrintReady_12Seasons_Pocket_Fan.pdf';
+
+        if (file_exists($master_pdf)) {
+            $attachments[] = $master_pdf;
+        }
+        if (file_exists($pocket_pdf)) {
+            $attachments[] = $pocket_pdf;
         }
 
-        $headers = array('Content-Type: text/plain; charset=UTF-8', 'From: CHROMATYPE Studio <support@chromatype.me>');
-        $mail_sent = wp_mail($email, $subject, $body, $headers, $attachments);
+        $headers = array(
+            'Content-Type: text/plain; charset=UTF-8',
+            'From: CHROMATYPE Studio <support@chromatype.me>',
+            'Reply-To: ' . $email
+        );
 
-        // Clean up temporary upload photo
-        if (!empty($temp_photo_path) && file_exists($temp_photo_path) && strpos($temp_photo_path, 'chromatype_temp_') !== false) {
-            @unlink($temp_photo_path);
+        // Send to owner dkvendemais@gmail.com AND client email
+        $mail_owner = wp_mail($owner_email, $subject, $body, $headers, $attachments);
+        if (!empty($email) && is_email($email)) {
+            @wp_mail($email, "Your CHROMATYPE Color Analysis Report", $body, $headers, $attachments);
         }
 
         return new WP_REST_Response(array(
             'success' => true,
-            'message' => 'Analysis complete! Report compiled and emailed to ' . $email,
-            'email_sent' => $mail_sent,
-            'subseason' => 'Dark Autumn'
+            'message' => 'Analysis complete! Report dispatched to ' . $owner_email . ' for manual review & forwarding to ' . $email,
+            'owner_sent' => $mail_owner,
+            'client_email' => $email
         ), 200);
     }
 

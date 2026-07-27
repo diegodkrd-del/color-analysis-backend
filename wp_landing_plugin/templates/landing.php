@@ -221,6 +221,27 @@ tailwind.config = {
 
 <div class="chromatype-root bg-brand-black text-brand-cream" style="margin-top:-30px; margin-left:-30px; margin-right:-30px;">
 
+
+<!-- Camera Capture Modal -->
+<div id="cameraModal" class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 hidden">
+  <div class="bg-brand-card border border-brand-border rounded-2xl max-w-lg w-full p-6 text-center relative">
+    <button onclick="closeCameraModal()" class="absolute top-4 right-4 text-brand-muted hover:text-brand-cream text-lg"><i class="fas fa-times"></i></button>
+    <h3 class="font-display font-bold text-xl text-brand-cream mb-2">Take Live Selfie</h3>
+    <p class="text-brand-light text-xs mb-4">Position your face in good natural light facing the camera.</p>
+    
+    <div class="relative w-full aspect-square bg-black rounded-xl overflow-hidden mb-4 border border-brand-border">
+      <video id="cameraVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+      <canvas id="cameraCanvas" class="hidden"></canvas>
+    </div>
+
+    <div class="flex gap-3">
+      <button onclick="closeCameraModal()" class="flex-1 py-3 border border-brand-border rounded-xl text-brand-light font-bold text-sm hover:border-brand-muted">Cancel</button>
+      <button onclick="snapPhoto()" class="flex-1 py-3 bg-brand-accent text-white rounded-xl font-bold text-sm hover:bg-brand-accentHover shadow-lg"><i class="fas fa-camera mr-2"></i>Snap Photo</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- Toast Notification -->
 <div id="toast" class="fixed bottom-6 left-6 z-50 px-6 py-4 rounded-xl bg-brand-card border border-brand-border text-brand-cream text-sm opacity-0 pointer-events-none transition-all duration-300"></div>
 
@@ -531,14 +552,24 @@ tailwind.config = {
         <input type="email" id="userEmail" placeholder="your@email.com" class="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 text-brand-cream placeholder-brand-muted text-sm focus:outline-none focus:border-brand-accent transition-colors">
       </div>
 
-      <!-- Photo Upload Zone -->
+      <!-- Photo Upload & Camera Selector Zone -->
       <div class="mb-6">
-        <label class="block text-brand-light text-sm font-medium mb-2">Upload Selfie (Natural Daylight)</label>
-        <div id="uploadZone" class="border-2 border-dashed border-brand-border rounded-xl p-8 text-center cursor-pointer hover:border-brand-accent transition-colors" onclick="document.getElementById('photoInput').click()">
+        <label class="block text-brand-light text-sm font-medium mb-2">Provide Your Selfie (Natural Daylight)</label>
+        
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <button type="button" onclick="openCameraModal()" class="py-3 px-4 bg-brand-dark border border-brand-border rounded-xl text-brand-cream font-semibold text-xs hover:border-brand-accent transition-colors flex items-center justify-center gap-2">
+            <i class="fas fa-camera text-brand-accent text-sm"></i> Take Live Selfie
+          </button>
+          <button type="button" onclick="document.getElementById('photoInput').click()" class="py-3 px-4 bg-brand-dark border border-brand-border rounded-xl text-brand-cream font-semibold text-xs hover:border-brand-accent transition-colors flex items-center justify-center gap-2">
+            <i class="fas fa-folder-open text-brand-gold text-sm"></i> Upload Photo File
+          </button>
+        </div>
+
+        <div id="uploadZone" class="border-2 border-dashed border-brand-border rounded-xl p-6 text-center cursor-pointer hover:border-brand-accent transition-colors" onclick="document.getElementById('photoInput').click()">
           <div id="uploadPlaceholder">
-            <i class="fas fa-cloud-arrow-up text-3xl text-brand-muted mb-3"></i>
-            <p class="text-brand-light text-sm mb-1">Click to upload or drag & drop photo here</p>
-            <p class="text-brand-muted text-xs">JPG or PNG under 10MB — no filters, natural daylight</p>
+            <i class="fas fa-cloud-arrow-up text-2xl text-brand-muted mb-2"></i>
+            <p class="text-brand-light text-xs mb-1">Click to browse or drag & drop image here</p>
+            <p class="text-brand-muted text-[10px]">JPG or PNG under 10MB — no filters, natural daylight</p>
           </div>
           <div id="uploadPreview" class="hidden">
             <img id="previewImg" class="max-h-44 mx-auto rounded-lg mb-2 object-cover" alt="Preview">
@@ -725,6 +756,66 @@ function handleSubmit() {
   } else {
     window.location.href = "http://chromatype.me/cart?action=show&add=1&id_product=1";
   }
+}
+
+
+
+// HTML5 Camera Capture Functions
+let cameraStream = null;
+
+function openCameraModal() {
+  const modal = document.getElementById('cameraModal');
+  const video = document.getElementById('cameraVideo');
+  modal.classList.remove('hidden');
+
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 720 } } })
+      .then(stream => {
+        cameraStream = stream;
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        alert('Could not access camera. Please allow camera permissions or upload a photo file.');
+        closeCameraModal();
+      });
+  } else {
+    alert('Camera API not supported on this browser. Please upload a photo file.');
+    closeCameraModal();
+  }
+}
+
+function closeCameraModal() {
+  const modal = document.getElementById('cameraModal');
+  modal.classList.add('hidden');
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+}
+
+function snapPhoto() {
+  const video = document.getElementById('cameraVideo');
+  const canvas = document.getElementById('cameraCanvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 640;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+  
+  // Convert DataURL to File object for uploadedFile
+  fetch(dataUrl)
+    .then(res => res.blob())
+    .then(blob => {
+      uploadedFile = new File([blob], "camera_selfie.jpg", { type: "image/jpeg" });
+      document.getElementById('previewImg').src = dataUrl;
+      document.getElementById('previewName').textContent = "camera_selfie.jpg (Live Snapshot)";
+      document.getElementById('uploadPlaceholder').classList.add('hidden');
+      document.getElementById('uploadPreview').classList.remove('hidden');
+      checkFormReady();
+      closeCameraModal();
+    });
 }
 
 
