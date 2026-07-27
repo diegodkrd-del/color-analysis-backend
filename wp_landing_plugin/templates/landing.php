@@ -226,7 +226,7 @@ tailwind.config = {
 
 <!-- Timed Slide-in Call To Action Modal (Triggers after 25 sec or scroll) -->
 <div id="timedCtaModal" class="cta-modal">
-  <button onclick="closeCtaModal()" class="absolute top-3 right-3 text-brand-muted hover:text-brand-cream text-sm"><i class="fas fa-times"></i></button>
+  <button onclick="closeCtaModal()" class="absolute top-3 right-3 w-10 h-10 rounded-full bg-brand-dark/90 border border-brand-border hover:border-brand-accent text-brand-light hover:text-brand-cream text-lg flex items-center justify-center transition-all shadow-md active:scale-95" aria-label="Close modal"><i class="fas fa-xmark"></i></button>
   <div class="flex items-center gap-2 text-brand-accent text-xs font-bold uppercase tracking-wider mb-2">
     <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></span>
     Limited Launch Offer
