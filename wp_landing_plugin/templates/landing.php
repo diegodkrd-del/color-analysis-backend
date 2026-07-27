@@ -249,21 +249,7 @@ tailwind.config = {
 <nav class="sticky top-0 z-40 bg-brand-black/90 backdrop-blur-md border-b border-brand-border/60">
   <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
     <a href="#" class="flex items-center gap-2.5">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <circle cx="16" cy="16" r="15" stroke="url(#logoGrad)" stroke-width="2"/>
-        <circle cx="16" cy="16" r="8" fill="url(#logoGrad)"/>
-        <circle cx="16" cy="8" r="3" fill="#e8734a"/>
-        <circle cx="22" cy="20" r="3" fill="#d4a853"/>
-        <circle cx="10" cy="20" r="3" fill="#8fbc6a"/>
-        <defs>
-          <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
-            <stop stop-color="#e8734a"/>
-            <stop offset="0.5" stop-color="#d4a853"/>
-            <stop offset="1" stop-color="#8fbc6a"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      <span class="font-display font-bold text-xl text-brand-cream tracking-tight">CHROMA<span class="text-brand-accent">TYPE</span></span>
+      <img src="http://chromatype.me/img/logo-1784993471.jpg" alt="CHROMATYPE Studio" class="h-10 w-auto object-contain rounded-md">
     </a>
     
     <div class="hidden md:flex items-center gap-8 text-sm font-medium text-brand-light">
@@ -427,74 +413,82 @@ tailwind.config = {
 
 <!-- Pricing Section -->
 <section id="pricing" class="py-24 relative bg-brand-dark/40 border-t border-brand-border">
-  <div class="max-w-5xl mx-auto px-6">
+  <div class="max-w-6xl mx-auto px-6">
     <div class="text-center mb-16 reveal">
       <span class="text-brand-accent text-sm font-semibold tracking-widest uppercase">Start Operations Special</span>
-      <h2 class="font-display font-extrabold text-4xl md:text-5xl text-brand-cream mt-2 mb-4">One Analysis. Lifetime Wardrobe Mastery.</h2>
-      <p class="text-brand-light text-lg max-w-xl mx-auto">Special launch pricing available now. Regular session fee increasing to $199 soon.</p>
+      <h2 class="font-display font-extrabold text-4xl md:text-5xl text-brand-cream mt-2 mb-4">Select Your CHROMATYPE Pass</h2>
+      <p class="text-brand-light text-lg max-w-2xl mx-auto">Choose between our single consumer analysis pass or our commercial operator franchise licenses.</p>
     </div>
 
     <div class="grid md:grid-cols-3 gap-8 items-stretch">
-      <!-- Essential Plan -->
-      <div class="reveal bg-brand-card rounded-2xl border border-brand-border p-8 flex flex-col justify-between season-card">
+      <!-- Product #1: B2C Consumer Pass ($29) -->
+      <div class="reveal pricing-featured bg-brand-card rounded-2xl p-8 flex flex-col justify-between season-card relative">
         <div>
-          <div class="text-brand-muted text-xs font-bold uppercase tracking-wider mb-2">Essential Pass</div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-brand-accent text-xs font-bold uppercase tracking-wider">Product #1 • B2C Consumer Pass</div>
+            <span class="px-3 py-1 bg-brand-accent/20 text-brand-accent text-xs font-bold rounded-full">Most Popular</span>
+          </div>
           <div class="flex items-baseline gap-1 mb-4">
             <span class="font-display font-black text-5xl text-brand-cream">$29</span>
             <span class="text-brand-muted text-sm line-through">$199</span>
           </div>
-          <p class="text-brand-light text-sm mb-6">Complete 12-season classification report.</p>
+          <p class="text-brand-light text-sm mb-6">Personal Color Analysis Session with 2 instant PDF deliveries.</p>
           <ul class="space-y-3 mb-8 text-sm text-brand-light">
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>12 Season identification</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>36 Signature color swatches</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Colors to avoid guide</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Full PDF Dossier via email</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>12 Season CIELAB Spectrophotometric Analysis</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>52-Page Master Dossier PDF (Instant Delivery)</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>36 Half-Page Virtual Face Drapes</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Print-Ready 3-Tier Pocket Swatch Fan PDF ($29 Value)</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>432 Pantone TCX Matched Swatch Codes</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Makeup & Jewelry Tone Blueprint</li>
           </ul>
         </div>
-        <a href="#analyze" class="block text-center py-3 border border-brand-border rounded-xl text-brand-cream font-bold hover:border-brand-accent hover:text-brand-accent transition-all">Select Essential</a>
+        <a href="http://chromatype.me/cart?action=show&add=1&id_product=1" class="block text-center py-4 bg-brand-accent text-white rounded-xl font-bold hover:bg-brand-accentHover transition-all shadow-lg">
+          Buy $29 Consumer Pass
+        </a>
       </div>
 
-      <!-- Master Plan (Featured) -->
-      <div class="reveal pricing-featured bg-brand-card rounded-2xl p-8 flex flex-col justify-between season-card relative" style="transition-delay:0.15s;">
+      <!-- Product #2: B2B Beginner Operator Pass ($150) -->
+      <div class="reveal bg-brand-card rounded-2xl border border-brand-border p-8 flex flex-col justify-between season-card">
         <div>
-          <div class="flex items-center justify-between mb-2">
-            <div class="text-brand-accent text-xs font-bold uppercase tracking-wider">Master Package</div>
-            <span class="px-3 py-1 bg-brand-accent/20 text-brand-accent text-xs font-bold rounded-full">Most Popular</span>
-          </div>
+          <div class="text-brand-gold text-xs font-bold uppercase tracking-wider mb-2">Product #2 • B2B Beginner Operator</div>
           <div class="flex items-baseline gap-1 mb-4">
-            <span class="font-display font-black text-5xl text-brand-cream">$49</span>
-            <span class="text-brand-muted text-sm line-through">$249</span>
+            <span class="font-display font-black text-5xl text-brand-cream">$150</span>
+            <span class="text-brand-muted text-sm line-through">$750</span>
           </div>
-          <p class="text-brand-light text-sm mb-6">Full 52-page master report + 3-tier pocket swatch fan.</p>
+          <p class="text-brand-light text-sm mb-6">Commercial entry pass for aspiring color analysts & stylists.</p>
           <ul class="space-y-3 mb-8 text-sm text-brand-light">
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Everything in Essential</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>52-Page Master PDF Report</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>36 Half-Screen Virtual Face Drapes</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Print-Ready 12-Season Pocket Fan PDF ($29 Value)</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Pantone TCX Matching Codes</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Jewelry & Makeup Shade Blueprint</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Commercial Operator License</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Right to sell $29 to $199 sessions</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Set your own brand pricing strategy</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Complete 12-Season Master Guide PDF</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Print-Ready Swatch Fan Master File</li>
           </ul>
         </div>
-        <a href="#analyze" class="block text-center py-4 bg-brand-accent text-white rounded-xl font-bold hover:bg-brand-accentHover transition-all shadow-lg">Get Master Package</a>
+        <a href="http://chromatype.me/cart?action=show&add=1&id_product=2" class="block text-center py-3 border border-brand-gold/40 rounded-xl text-brand-gold font-bold hover:border-brand-gold hover:bg-brand-gold/10 transition-all">
+          Buy $150 Beginner Pass
+        </a>
       </div>
 
-      <!-- Pro Stylist Plan -->
-      <div class="reveal bg-brand-card rounded-2xl border border-brand-border p-8 flex flex-col justify-between season-card" style="transition-delay:0.3s;">
+      <!-- Product #3: B2B Full Commercial Suite ($2,500) -->
+      <div class="reveal bg-brand-card rounded-2xl border border-brand-border p-8 flex flex-col justify-between season-card">
         <div>
-          <div class="text-brand-gold text-xs font-bold uppercase tracking-wider mb-2">Pro Stylist & Commercial</div>
+          <div class="text-brand-cream text-xs font-bold uppercase tracking-wider mb-2">Product #3 • Full Commercial Suite</div>
           <div class="flex items-baseline gap-1 mb-4">
-            <span class="font-display font-black text-5xl text-brand-cream">$89</span>
-            <span class="text-brand-muted text-sm line-through">$399</span>
+            <span class="font-display font-black text-5xl text-brand-cream">$2,500</span>
+            <span class="text-brand-muted text-sm line-through">$10,000</span>
           </div>
-          <p class="text-brand-light text-sm mb-6">For image consultants and boutique stylists.</p>
+          <p class="text-brand-light text-sm mb-6">Complete franchise suite for established salons & image studios.</p>
           <ul class="space-y-3 mb-8 text-sm text-brand-light">
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Everything in Master Package</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Commercial client resale license</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>White-label PDF report formatting</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Sub-season draping comparison ring</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Full Commercial Resale License</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>White-Label Custom Report Formatting</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Unlimited Client Session Volume</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>Dedicated Priority Processing Queue</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-emerald-400 text-xs"></i>1-on-1 Studio Onboarding Support</li>
           </ul>
         </div>
-        <a href="#analyze" class="block text-center py-3 border border-brand-gold/40 rounded-xl text-brand-gold font-bold hover:border-brand-gold hover:bg-brand-gold/10 transition-all">Select Pro Stylist</a>
+        <a href="http://chromatype.me/cart?action=show&add=1&id_product=3" class="block text-center py-3 border border-brand-border rounded-xl text-brand-cream font-bold hover:border-brand-accent hover:text-brand-accent transition-all">
+          Buy $2,500 Full Suite
+        </a>
       </div>
     </div>
   </div>
@@ -568,9 +562,7 @@ tailwind.config = {
 <!-- Footer -->
 <footer class="border-t border-brand-border py-12 bg-brand-black">
   <div class="max-w-6xl mx-auto px-6 text-center text-brand-muted text-sm">
-    <div class="flex justify-center items-center gap-2 mb-4">
-      <span class="font-display font-bold text-lg text-brand-cream">CHROMA<span class="text-brand-accent">TYPE</span></span>
-    </div>
+    <div class="flex justify-center items-center gap-2 mb-4"><img src="http://chromatype.me/img/logo-1784993471.jpg" alt="CHROMATYPE Studio" class="h-10 w-auto object-contain rounded-md"></div>
     <p class="mb-4">CHROMATYPE Proprietary CIELAB 3D Spectrophotometric Color Analysis Engine.</p>
     <p class="text-xs text-brand-muted/60">&copy; 2026 CHROMATYPE Studio (chromatype.me & color-analysis.shop). All rights reserved.</p>
   </div>
