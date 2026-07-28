@@ -2,8 +2,8 @@
 /**
  * Plugin Name: CHROMATYPE Landing Page Studio
  * Plugin URI: https://chromatype.me/
- * Description: Standalone production landing page template for CHROMATYPE CIELAB 3D Color Analysis with $29 launch offer, live camera capture, direct PayPal links, hand/nail polish white paper matching, and DIY makeup masterclass blueprint.
- * Version: 6.0.0
+ * Description: Production-ready landing page template for CHROMATYPE CIELAB 3D Color Analysis with $29 launch offer, 4-photo intake (face, hand, iris, mucosa), live camera capture, direct PayPal links, hand/nail polish white paper matching, 432 Pantone TCX drapes, and DIY makeup masterclass blueprint.
+ * Version: 7.0.0
  * Author: CHROMATYPE Studio
  * Author URI: https://chromatype.me/
  */
