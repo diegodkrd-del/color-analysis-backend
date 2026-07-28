@@ -98,11 +98,19 @@ PHONE_HTML = """<!DOCTYPE html>
 class MobileCamHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
-        if parsed.path == '/mobile_cam':
+        if parsed.path == '/' or parsed.path == '/studio':
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.end_headers()
+            studio_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'local_operator_studio.html')
+            with open(studio_path, 'rb') as f:
+                self.wfile.write(f.read())
+        elif parsed.path == '/mobile_cam':
             self.send_response(200)
             self.send_header('Content-Type', 'text/html; charset=utf-8')
             self.end_headers()
             self.wfile.write(PHONE_HTML.encode('utf-8'))
+
         elif parsed.path == '/get_frame':
             global latest_frame
             self.send_response(200)
@@ -156,26 +164,43 @@ class MobileCamHandler(BaseHTTPRequestHandler):
                 req = json.loads(post_data.decode('utf-8'))
                 client_name = req.get('client_name', 'Valued Client')
                 client_email = req.get('client_email', 'client@example.com')
-                img_base64 = req.get('image', '')
+                img_input = req.get('image', '')
+                operator_branding = req.get('branding', None)
 
-                if not img_base64:
+                if not img_input:
                     self.send_response(400)
                     self.end_headers()
                     self.wfile.write(b'{"error":"Missing image data"}')
                     return
 
-                # Decode base64 image to temporary file
-                if ',' in img_base64:
-                    img_base64 = img_base64.split(',', 1)[1]
-                img_data = base64.b64decode(img_base64)
-                
+
                 temp_dir = tempfile.gettempdir()
                 temp_img_path = os.path.join(temp_dir, f"chromatype_temp_{os.urandom(4).hex()}.jpg")
-                with open(temp_img_path, 'wb') as f:
-                    f.write(img_data)
+
+                # Handle base64 Data URL, HTTP URL, or local file
+                if img_input.startswith('data:image'):
+                    if ',' in img_input:
+                        img_base64 = img_input.split(',', 1)[1]
+                    else:
+                        img_base64 = img_input
+                    img_data = base64.b64decode(img_base64)
+                    with open(temp_img_path, 'wb') as f:
+                        f.write(img_data)
+                elif img_input.startswith(('http://', 'https://')):
+                    import urllib.request
+                    urllib.request.urlretrieve(img_input, temp_img_path)
+                elif os.path.exists(img_input.replace('file:///', '')):
+                    import shutil
+                    shutil.copyfile(img_input.replace('file:///', ''), temp_img_path)
+                else:
+                    # Fallback to base64 decode if plain string
+                    img_data = base64.b64decode(img_input)
+                    with open(temp_img_path, 'wb') as f:
+                        f.write(img_data)
 
                 # 1. Run CIELAB spectrophotometry color analysis
                 analysis = analyze_photo(temp_img_path, apply_white_balance=True)
+
                 if 'error' in analysis:
                     # Fallback default analysis if face detection fails on icon
                     analysis = {
@@ -202,7 +227,8 @@ class MobileCamHandler(BaseHTTPRequestHandler):
                 pdf_filename = f"CHROMATYPE_Master_52Page_Report_{safe_client}.pdf"
                 output_pdf_path = os.path.join(out_dir, pdf_filename)
 
-                generated_pdf = generate_pdf(temp_img_path, analysis, output_pdf_path, client_name=client_name)
+                generated_pdf = generate_pdf(temp_img_path, analysis, output_pdf_path, client_name=client_name, operator_branding=operator_branding)
+
 
                 # Return full analysis JSON to client UI
                 res_payload = {

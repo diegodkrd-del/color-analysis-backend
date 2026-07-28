@@ -248,7 +248,7 @@
 
     <!-- PAGE 1: COVER -->
     <div class="page cover-page">
-        <div class="header-brand">CHROMATYPE • Personal Color Analysis Dossier</div>
+        <div class="header-brand">{{ branding.business_name if branding and branding.business_name else 'CHROMATYPE' }} • Personal Color Analysis Dossier</div>
         <h1 class="cover-title">{{ season }}</h1>
         <div class="cover-subtitle">Dossier: {{ sub_season }}</div>
         <div style="font-size: 16px; font-weight: 600; color: {{ header_color }}; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px;">Prepared Exclusively for: {{ client_name }}</div>
@@ -264,10 +264,11 @@
         </p>
 
         <div class="footer-page">
-            <span>CHROMATYPE Studio • Confidential Client Report</span>
+            <span>{{ branding.business_name if branding and branding.business_name else 'CHROMATYPE Studio' }} • {{ branding.business_email if branding and branding.business_email else 'Confidential Client Report' }}</span>
             <span>Page 1 of 52</span>
         </div>
     </div>
+
 
     <!-- PAGE 2: CHROMATYPE RADIAL WHEEL & 4-SEASON SPECTRUM COMPARISON -->
     <div class="page" style="text-align: center;">

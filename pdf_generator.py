@@ -424,12 +424,20 @@ def crop_and_isolate_hairfree_face(image_path: str) -> str:
         return image_path
 
 
-def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, client_name: str = 'Valued Client') -> str:
+def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, client_name: str = 'Valued Client', operator_branding: dict = None) -> str:
     # 1. Guarantee upright orientation using eye + mouth cascade scoring
     image_path = ensure_upright_image(image_path)
     # 2. Crop background and isolate hair-free clean face skin
     image_path = crop_and_isolate_hairfree_face(image_path)
 
+    if not operator_branding:
+        operator_branding = {
+            'business_name': 'CHROMATYPE Studio',
+            'logo_url': 'http://chromatype.me/img/logo-1784993471.jpg',
+            'business_email': 'admin@color-analysis.shop',
+            'business_phone': '+1 (800) 555-0199',
+            'business_website': 'https://personal6512.live-website.com'
+        }
     
     try:
         from background_remover import remove_background
@@ -498,6 +506,8 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
         metrics=metrics,
         ita_category=ita_category,
         skin_lab=skin_lab_dict,
+        branding=operator_branding,
+
         winter_match=winter_match,
         autumn_match=autumn_match,
         summer_match=summer_match,
