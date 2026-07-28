@@ -300,8 +300,8 @@ def get_base64_image(image_path: str) -> str:
 
 def ensure_upright_image(image_path: str) -> str:
     """
-    Detects face, eye, and mouth positions across 0°, 90°, 180°, and 270° rotations
-    to guarantee the image is ALWAYS oriented right side up.
+    Ensures image is right side up. Preserves 0° original orientation by default
+    unless 0° is strictly detected as sideways or upside down.
     """
     if not os.path.exists(image_path):
         return image_path
@@ -313,8 +313,22 @@ def ensure_upright_image(image_path: str) -> str:
         _CASCADE_DIR = cv2.data.haarcascades
         _FACE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_frontalface_default.xml')
         _EYE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_eye.xml')
-        _SMILE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_smile.xml')
 
+        # 1. Check 0° orientation first
+        gray0 = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+        gray0_eq = cv2.equalizeHist(gray0)
+        faces0 = _FACE_CASCADE.detectMultiScale(gray0_eq, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
+
+        if len(faces0) > 0:
+            fx, fy, fw, fh = sorted(faces0, key=lambda f: f[2] * f[3], reverse=True)[0]
+            roi_eyes0 = gray0_eq[fy:fy + int(fh * 0.6), fx:fx + fw]
+            eyes0 = _EYE_CASCADE.detectMultiScale(roi_eyes0, scaleFactor=1.1, minNeighbors=3, minSize=(10, 10))
+            
+            # If 0° detects face AND eyes in upper half, original orientation is already upright!
+            if len(eyes0) > 0:
+                return image_path
+
+        # 2. Evaluate rotations (0°, 90°, 180°, 270°) if 0° was ambiguous
         best_angle = 0
         max_score = -1.0
 
@@ -329,18 +343,15 @@ def ensure_upright_image(image_path: str) -> str:
             faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
 
             if len(faces) > 0:
-                largest_face = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
-                fx, fy, fw, fh = largest_face
-
-                # Check upper face region for eyes
-                roi_upper = gray_eq[fy:fy + int(fh * 0.55), fx:fx + fw]
+                fx, fy, fw, fh = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
+                roi_upper = gray_eq[fy:fy + int(fh * 0.5), fx:fx + fw]
                 eyes = _EYE_CASCADE.detectMultiScale(roi_upper, scaleFactor=1.1, minNeighbors=4, minSize=(12, 12))
-
-                # Check lower face region for mouth/lips
-                roi_lower = gray_eq[fy + int(fh * 0.50):fy + fh, fx:fx + fw]
-                smiles = _SMILE_CASCADE.detectMultiScale(roi_lower, scaleFactor=1.1, minNeighbors=3, minSize=(12, 12))
-
-                score = (fw * fh) + (len(eyes) * 15000) + (len(smiles) * 10000)
+                
+                score = (fw * fh) + (len(eyes) * 20000)
+                # Strong bias toward 0° original orientation to prevent unwanted flips
+                if angle == 0:
+                    score += 15000
+                    
                 if score > max_score:
                     max_score = score
                     best_angle = angle
@@ -350,14 +361,17 @@ def ensure_upright_image(image_path: str) -> str:
             elif best_angle == 180: img = img.rotate(180, expand=True)
             elif best_angle == 270: img = img.rotate(90, expand=True)
 
-        out_dir = os.path.dirname(os.path.abspath(image_path))
-        upright_path = os.path.join(out_dir, '_upright_' + os.path.basename(image_path))
-        if not upright_path.lower().endswith(('.png', '.jpg', '.jpeg')):
-            upright_path += '.png'
-        img.save(upright_path)
-        return upright_path
+            out_dir = os.path.dirname(os.path.abspath(image_path))
+            upright_path = os.path.join(out_dir, '_upright_' + os.path.basename(image_path))
+            if not upright_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+                upright_path += '.png'
+            img.save(upright_path)
+            return upright_path
+
+        return image_path
     except Exception as e:
         return image_path
+
 
 
 def crop_and_isolate_hairfree_face(image_path: str) -> str:
