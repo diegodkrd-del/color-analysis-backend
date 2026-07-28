@@ -374,96 +374,73 @@ def ensure_upright_image(image_path: str) -> str:
 
 
 
-def crop_and_isolate_hairfree_face(image_path: str) -> str:
+def generate_draped_person_image(image_path: str, hex_color: str) -> str:
     """
-    Crops background and removes hair, leaving ONLY the clean face skin oval
-    so virtual face draping shows true skin harmony without hair interference.
+    Drapes silk color ONLY below cheeks and chin (over neck/shoulders)
+    while keeping full original head, hair, eyes, and background 100% intact.
     """
     if not os.path.exists(image_path):
         return image_path
     try:
-        cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+        cv_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
         if cv_img is None: return image_path
 
-        # Convert to RGBA
-        if len(cv_img.shape) == 2:
-            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_GRAY2BGRA)
-        elif cv_img.shape[2] == 3:
-            b, g, r = cv2.split(cv_img)
-            alpha = np.ones(b.shape, dtype=b.dtype) * 255
-            cv_img = cv2.merge((b, g, r, alpha))
+        h, w = cv_img.shape[:2]
 
-        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGRA2GRAY)
-        gray_eq = cv2.equalizeHist(gray)
+        # Convert hex color to BGR
+        hex_clean = hex_color.lstrip('#')
+        r, g, b = tuple(int(hex_clean[i:i+2], 16) for i in (0, 2, 4))
+        drape_bgr = (b, g, r)
 
         _CASCADE_DIR = cv2.data.haarcascades
         _FACE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_frontalface_default.xml')
+        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+        gray_eq = cv2.equalizeHist(gray)
         faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
 
-        if len(faces) == 0:
-            h, w = gray.shape[:2]
-            fx, fy, fw, fh = int(w * 0.15), int(h * 0.1), int(w * 0.7), int(h * 0.8)
-        else:
+        if len(faces) > 0:
             faces = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)
             fx, fy, fw, fh = faces[0]
+            chin_y = int(fy + fh * 0.82)
+            neck_center_x = int(fx + fw * 0.5)
+        else:
+            chin_y = int(h * 0.65)
+            neck_center_x = int(w * 0.5)
 
-        # Crop face excluding top hair line and background
-        crop_top = max(0, int(fy + fh * 0.08))         # Cuts off top hair
-        crop_bottom = min(cv_img.shape[0], int(fy + fh * 1.05)) # Chin bounds
-        crop_left = max(0, int(fx + fw * 0.02))        # Cuts off side hair
-        crop_right = min(cv_img.shape[1], int(fx + fw * 0.98))
+        # Create drape mask: 0 above chin, 255 below chin over shoulders
+        mask = np.zeros((h, w), dtype=np.float32)
 
-        cropped = cv_img[crop_top:crop_bottom, crop_left:crop_right]
-        ch, cw = cropped.shape[:2]
+        for y in range(h):
+            if y < chin_y:
+                continue
+            # Smooth feathered transition from chin down
+            alpha = min(1.0, (y - chin_y) / (fh * 0.15 + 1.0))
+            mask[y, :] = alpha
 
-        # Convert any white or near-white background pixels to transparent (zero white padding)
-        rgb_part = cropped[:, :, :3]
-        white_mask = (rgb_part[:, :, 0] > 240) & (rgb_part[:, :, 1] > 240) & (rgb_part[:, :, 2] > 240)
+        mask = cv2.GaussianBlur(mask, (21, 21), 0)
+        mask_3d = np.dstack([mask, mask, mask])
 
-        # Create smooth hair-free face skin oval mask
-        mask = np.zeros((ch, cw), dtype=np.uint8)
-        center = (cw // 2, int(ch * 0.48))
-        axes = (int(cw * 0.46), int(ch * 0.48))
-        cv2.ellipse(mask, center, axes, 0, 0, 360, 255, -1)
+        # Create solid drape color image
+        color_layer = np.full((h, w, 3), drape_bgr, dtype=np.uint8)
 
-        # Apply mask and eliminate white background pixels completely
-        cropped[:, :, 3] = cv2.bitwise_and(cropped[:, :, 3], mask)
-        cropped[white_mask, 3] = 0
+        # Blend drape color below chin onto original photo
+        composite = (cv_img.astype(np.float32) * (1.0 - mask_3d) + color_layer.astype(np.float32) * mask_3d).astype(np.uint8)
 
         out_dir = os.path.dirname(os.path.abspath(image_path))
-        face_only_path = os.path.join(out_dir, '_hairfree_face_' + os.path.basename(image_path))
-        if not face_only_path.lower().endswith('.png'):
-            face_only_path += '.png'
-        cv2.imwrite(face_only_path, cropped)
-        return face_only_path
-
+        draped_path = os.path.join(out_dir, f'_draped_{hex_clean}_' + os.path.basename(image_path))
+        if not draped_path.lower().endswith('.png'):
+            draped_path += '.png'
+        cv2.imwrite(draped_path, composite)
+        return draped_path
     except Exception as e:
         return image_path
+
 
 
 def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, client_name: str = 'Valued Client', operator_branding: dict = None) -> str:
     # 1. Guarantee upright orientation using eye + mouth cascade scoring
     image_path = ensure_upright_image(image_path)
-    # 2. Crop background and isolate hair-free clean face skin
-    image_path = crop_and_isolate_hairfree_face(image_path)
 
-    if not operator_branding:
-        operator_branding = {
-            'business_name': 'CHROMATYPE Studio',
-            'logo_url': 'http://chromatype.me/img/logo-1784993471.jpg',
-            'business_email': 'admin@color-analysis.shop',
-            'business_phone': '+1 (800) 555-0199',
-            'business_website': 'https://personal6512.live-website.com'
-        }
-    
-    try:
-        from background_remover import remove_background
-        temp_cutout = output_pdf_path.replace('.pdf', '_bg_cutout.png')
-        remove_background(image_path, temp_cutout)
-        if os.path.exists(temp_cutout) and os.path.getsize(temp_cutout) > 1000:
-            image_path = temp_cutout
-    except Exception as bg_err:
-        pass
         
     season = analysis_data.get('season', 'Spring') or 'Spring'
     sub_season = analysis_data.get('sub_season', season) or season
