@@ -751,3 +751,18 @@ def calculate_cielab_dermatology_metrics(L, a, b, L_hair=25.0):
         'Hue_Angle': hue_deg,
         'Contrast_Level': contrast_level
     }
+
+
+
+# Mobile PDF Compression & Optimization Flag
+pdf_options = {
+    'page-size': 'A4',
+    'margin-top': '10mm',
+    'margin-right': '10mm',
+    'margin-bottom': '10mm',
+    'margin-left': '10mm',
+    'encoding': 'UTF-8',
+    'image-quality': '80',  # Mobile lightweight compression
+    'image-dpi': '150',      # Fast phone viewing DPI
+    'enable-local-file-access': None
+}
