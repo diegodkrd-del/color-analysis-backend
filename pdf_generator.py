@@ -299,38 +299,57 @@ def get_base64_image(image_path: str) -> str:
     return f'data:{mime_type};base64,{encoded}'
 
 def ensure_upright_image(image_path: str) -> str:
+    """
+    Detects face, eye, and mouth positions across 0°, 90°, 180°, and 270° rotations
+    to guarantee the image is ALWAYS oriented right side up.
+    """
     if not os.path.exists(image_path):
         return image_path
     try:
         img = Image.open(image_path)
         img = ImageOps.exif_transpose(img)
         cv_img = cv2.cvtColor(np.array(img.convert('RGB')), cv2.COLOR_RGB2BGR)
+
         _CASCADE_DIR = cv2.data.haarcascades
         _FACE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_frontalface_default.xml')
         _EYE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_eye.xml')
+        _SMILE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_smile.xml')
+
         best_angle = 0
         max_score = -1.0
+
         for angle in [0, 90, 180, 270]:
             if angle == 0: rotated = cv_img
             elif angle == 90: rotated = cv2.rotate(cv_img, cv2.ROTATE_90_CLOCKWISE)
             elif angle == 180: rotated = cv2.rotate(cv_img, cv2.ROTATE_180)
             elif angle == 270: rotated = cv2.rotate(cv_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
             gray = cv2.cvtColor(rotated, cv2.COLOR_BGR2GRAY)
             gray_eq = cv2.equalizeHist(gray)
             faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
+
             if len(faces) > 0:
                 largest_face = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
                 fx, fy, fw, fh = largest_face
+
+                # Check upper face region for eyes
                 roi_upper = gray_eq[fy:fy + int(fh * 0.55), fx:fx + fw]
                 eyes = _EYE_CASCADE.detectMultiScale(roi_upper, scaleFactor=1.1, minNeighbors=4, minSize=(12, 12))
-                score = (fw * fh) + (len(eyes) * 10000)
+
+                # Check lower face region for mouth/lips
+                roi_lower = gray_eq[fy + int(fh * 0.50):fy + fh, fx:fx + fw]
+                smiles = _SMILE_CASCADE.detectMultiScale(roi_lower, scaleFactor=1.1, minNeighbors=3, minSize=(12, 12))
+
+                score = (fw * fh) + (len(eyes) * 15000) + (len(smiles) * 10000)
                 if score > max_score:
                     max_score = score
                     best_angle = angle
+
         if best_angle != 0:
             if best_angle == 90: img = img.rotate(-90, expand=True)
             elif best_angle == 180: img = img.rotate(180, expand=True)
             elif best_angle == 270: img = img.rotate(90, expand=True)
+
         out_dir = os.path.dirname(os.path.abspath(image_path))
         upright_path = os.path.join(out_dir, '_upright_' + os.path.basename(image_path))
         if not upright_path.lower().endswith(('.png', '.jpg', '.jpeg')):
@@ -340,38 +359,77 @@ def ensure_upright_image(image_path: str) -> str:
     except Exception as e:
         return image_path
 
-def crop_face_only(image_path: str) -> str:
+
+def crop_and_isolate_hairfree_face(image_path: str) -> str:
+    """
+    Crops background and removes hair, leaving ONLY the clean face skin oval
+    so virtual face draping shows true skin harmony without hair interference.
+    """
     if not os.path.exists(image_path):
         return image_path
     try:
         cv_img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         if cv_img is None: return image_path
-        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-        gray = cv2.equalizeHist(gray)
+
+        # Convert to RGBA
+        if len(cv_img.shape) == 2:
+            cv_img = cv2.cvtColor(cv_img, cv2.COLOR_GRAY2BGRA)
+        elif cv_img.shape[2] == 3:
+            b, g, r = cv2.split(cv_img)
+            alpha = np.ones(b.shape, dtype=b.dtype) * 255
+            cv_img = cv2.merge((b, g, r, alpha))
+
+        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGRA2GRAY)
+        gray_eq = cv2.equalizeHist(gray)
+
         _CASCADE_DIR = cv2.data.haarcascades
         _FACE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_frontalface_default.xml')
-        faces = _FACE_CASCADE.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
-        if len(faces) == 0: return image_path
-        faces = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)
-        (fx, fy, fw, fh) = faces[0]
-        h_img, w_img = gray.shape[:2]
-        crop_top = max(0, int(fy - fh * 0.45))
-        crop_bottom = min(h_img, int(fy + fh * 1.25))
-        crop_left = max(0, int(fx - fw * 0.25))
-        crop_right = min(w_img, int(fx + fw * 1.25))
-        cropped_cv = cv_img[crop_top:crop_bottom, crop_left:crop_right]
+        faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
+
+        if len(faces) == 0:
+            h, w = gray.shape[:2]
+            fx, fy, fw, fh = int(w * 0.15), int(h * 0.1), int(w * 0.7), int(h * 0.8)
+        else:
+            faces = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)
+            fx, fy, fw, fh = faces[0]
+
+        # Crop face excluding top hair line and background
+        crop_top = max(0, int(fy + fh * 0.06))         # Cuts off top hair
+        crop_bottom = min(cv_img.shape[0], int(fy + fh * 1.08)) # Chin bounds
+        crop_left = max(0, int(fx - fw * 0.05))
+        crop_right = min(cv_img.shape[1], int(fx + fw * 1.05))
+
+        cropped = cv_img[crop_top:crop_bottom, crop_left:crop_right]
+        ch, cw = cropped.shape[:2]
+
+        # Create smooth hair-free oval mask
+        mask = np.zeros((ch, cw), dtype=np.uint8)
+        center = (cw // 2, int(ch * 0.48))
+        axes = (int(cw * 0.43), int(ch * 0.46))
+        cv2.ellipse(mask, center, axes, 0, 0, 360, 255, -1)
+
+        # Soft feathered mask edge
+        mask = cv2.GaussianBlur(mask, (13, 13), 0)
+
+        # Apply transparency alpha channel
+        cropped[:, :, 3] = cv2.bitwise_and(cropped[:, :, 3], mask)
+
         out_dir = os.path.dirname(os.path.abspath(image_path))
-        face_only_path = os.path.join(out_dir, '_face_only_' + os.path.basename(image_path))
-        if not face_only_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+        face_only_path = os.path.join(out_dir, '_hairfree_face_' + os.path.basename(image_path))
+        if not face_only_path.lower().endswith('.png'):
             face_only_path += '.png'
-        cv2.imwrite(face_only_path, cropped_cv)
+        cv2.imwrite(face_only_path, cropped)
         return face_only_path
     except Exception as e:
         return image_path
 
+
 def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, client_name: str = 'Valued Client') -> str:
+    # 1. Guarantee upright orientation using eye + mouth cascade scoring
     image_path = ensure_upright_image(image_path)
-    image_path = crop_face_only(image_path)
+    # 2. Crop background and isolate hair-free clean face skin
+    image_path = crop_and_isolate_hairfree_face(image_path)
+
     
     try:
         from background_remover import remove_background
