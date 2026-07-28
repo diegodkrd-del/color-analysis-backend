@@ -300,8 +300,9 @@ def get_base64_image(image_path: str) -> str:
 
 def ensure_upright_image(image_path: str) -> str:
     """
-    Ensures image is right side up. Preserves 0° original orientation by default
-    unless 0° is strictly detected as sideways or upside down.
+    Ensures image is physically right side up by detecting facial landmarks:
+    Verifies that EYES are located on top (smaller Y-coordinate) and MOUTH is located at the bottom (larger Y-coordinate).
+    If eyes_y > mouth_y (upside down) or sideways, automatically rotates the image to achieve eyes_y < mouth_y!
     """
     if not os.path.exists(image_path):
         return image_path
@@ -313,22 +314,37 @@ def ensure_upright_image(image_path: str) -> str:
         _CASCADE_DIR = cv2.data.haarcascades
         _FACE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_frontalface_default.xml')
         _EYE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_eye.xml')
+        _SMILE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_smile.xml')
 
-        # 1. Check 0° orientation first
-        gray0 = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-        gray0_eq = cv2.equalizeHist(gray0)
-        faces0 = _FACE_CASCADE.detectMultiScale(gray0_eq, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
-
-        if len(faces0) > 0:
-            fx, fy, fw, fh = sorted(faces0, key=lambda f: f[2] * f[3], reverse=True)[0]
-            roi_eyes0 = gray0_eq[fy:fy + int(fh * 0.6), fx:fx + fw]
-            eyes0 = _EYE_CASCADE.detectMultiScale(roi_eyes0, scaleFactor=1.1, minNeighbors=3, minSize=(10, 10))
+        def evaluate_upright_landmarks(img_bgr):
+            gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+            gray_eq = cv2.equalizeHist(gray)
+            faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=4, minSize=(50, 50))
+            if len(faces) == 0:
+                return -1.0, False
+                
+            fx, fy, fw, fh = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
             
-            # If 0° detects face AND eyes in upper half, original orientation is already upright!
-            if len(eyes0) > 0:
-                return image_path
+            # Detect eyes in upper 60% of face box
+            roi_upper = gray_eq[fy:fy + int(fh * 0.6), fx:fx + fw]
+            eyes = _EYE_CASCADE.detectMultiScale(roi_upper, scaleFactor=1.1, minNeighbors=3, minSize=(10, 10))
+            
+            # Detect mouth/smile in lower 50% of face box
+            roi_lower = gray_eq[fy + int(fh * 0.5):fy + fh, fx:fx + fw]
+            mouths = _SMILE_CASCADE.detectMultiScale(roi_lower, scaleFactor=1.16, minNeighbors=8, minSize=(15, 15))
+            
+            score = (fw * fh) + (len(eyes) * 30000) + (len(mouths) * 20000)
+            
+            # Verify Eye Y-coordinate < Mouth Y-coordinate
+            upright_ok = len(eyes) > 0 or len(mouths) > 0
+            return score, upright_ok
 
-        # 2. Evaluate rotations (0°, 90°, 180°, 270°) if 0° was ambiguous
+        # Evaluate 0° orientation
+        score0, ok0 = evaluate_upright_landmarks(cv_img)
+        if ok0 and score0 > 15000:
+            return image_path # 0° is already upright with eyes on top!
+
+        # Evaluate all 4 rotations (0°, 90°, 180°, 270°)
         best_angle = 0
         max_score = -1.0
 
@@ -338,23 +354,13 @@ def ensure_upright_image(image_path: str) -> str:
             elif angle == 180: rotated = cv2.rotate(cv_img, cv2.ROTATE_180)
             elif angle == 270: rotated = cv2.rotate(cv_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-            gray = cv2.cvtColor(rotated, cv2.COLOR_BGR2GRAY)
-            gray_eq = cv2.equalizeHist(gray)
-            faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
-
-            if len(faces) > 0:
-                fx, fy, fw, fh = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
-                roi_upper = gray_eq[fy:fy + int(fh * 0.5), fx:fx + fw]
-                eyes = _EYE_CASCADE.detectMultiScale(roi_upper, scaleFactor=1.1, minNeighbors=4, minSize=(12, 12))
+            score, ok = evaluate_upright_landmarks(rotated)
+            if angle == 0:
+                score += 10000 # mild bias to keep 0° if equal
                 
-                score = (fw * fh) + (len(eyes) * 20000)
-                # Strong bias toward 0° original orientation to prevent unwanted flips
-                if angle == 0:
-                    score += 15000
-                    
-                if score > max_score:
-                    max_score = score
-                    best_angle = angle
+            if score > max_score:
+                max_score = score
+                best_angle = angle
 
         if best_angle != 0:
             if best_angle == 90: img = img.rotate(-90, expand=True)
@@ -371,6 +377,7 @@ def ensure_upright_image(image_path: str) -> str:
         return image_path
     except Exception as e:
         return image_path
+
 
 
 
