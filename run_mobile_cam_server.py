@@ -138,16 +138,22 @@ class MobileCamHandler(BaseHTTPRequestHandler):
         elif parsed.path == '/download_swatch_fan':
             out_dir = r"C:\Users\dkven\Desktop\CHROMATYPE_Reports"
             os.makedirs(out_dir, exist_ok=True)
-            fan_pdf_path = os.path.join(out_dir, "CHROMATYPE_PrintReady_12Seasons_Pocket_Fan.pdf")
+            candidate_paths = [
+                os.path.join(out_dir, "CHROMATYPE_3Tier_Gradient_Pocket_Fan_PrintReady.pdf"),
+                os.path.join(out_dir, "CHROMATYPE_PrintReady_12Seasons_Pocket_Fan.pdf")
+            ]
 
-            if not os.path.exists(fan_pdf_path):
+            fan_pdf_path = next((p for p in candidate_paths if os.path.exists(p)), None)
+
+            if not fan_pdf_path:
                 import subprocess
                 try:
                     subprocess.run(['python', r'C:\Users\dkven\color_analysis_backend\generate_pocket_fan.py'], check=True)
-                except Exception:
-                    pass
+                    fan_pdf_path = next((p for p in candidate_paths if os.path.exists(p)), None)
+                except Exception as err:
+                    print(f"Fan PDF Gen Error: {err}")
 
-            if os.path.exists(fan_pdf_path):
+            if fan_pdf_path and os.path.exists(fan_pdf_path):
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/pdf')
                 self.send_header('Content-Disposition', 'attachment; filename="CHROMATYPE_PrintReady_Pocket_Swatch_Fan.pdf"')
@@ -158,6 +164,7 @@ class MobileCamHandler(BaseHTTPRequestHandler):
             else:
                 self.send_response(404)
                 self.end_headers()
+
 
         else:
             self.send_response(404)
