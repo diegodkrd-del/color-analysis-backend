@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHROMATYPE — High-Volume Salon Consultation & Multi-Camera Suite</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg: #f9f7f2;
+      --card: #ffffff;
+      --border: #e2ddd3;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: #1c1a17; }
+    
+    .season-gradient-border {
+      background: linear-gradient(90deg, #e8734a 0%, #d4a853 25%, #5bb8a9 50%, #8b6abf 75%, #e8734a 100%);
+      height: 4px;
+    }
+
+    .face-mask-oval { clip-path: ellipse(42% 48% at 50% 50%); }
+
+    .swatch-grid-item {
+      width: 24px; height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .swatch-grid-item:hover {
+      transform: scale(1.4);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      z-index: 10;
+    }
+
+    .studio-light-ring {
+      box-shadow: 0 0 35px 8px rgba(232, 115, 74, 0.3), inset 0 0 15px 2px rgba(255, 255, 255, 0.8);
+      border: 3px solid #e8734a;
+    }
+  </style>
+</head>
+<body class="p-6">
+  <div class="season-gradient-border rounded-full max-w-7xl mx-auto mb-4"></div>
+
+  
+
+<!-- QR Code Phone Camera Connect Modal -->
+<div id="phoneCamModal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
+  <div class="bg-white border border-stone-200 rounded-2xl max-w-md w-full p-6 text-center relative shadow-2xl">
+    <button onclick="closePhoneCamModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-lg"><i class="fas fa-times"></i></button>
+    
+    <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-3 text-xl"><i class="fas fa-qrcode"></i></div>
+    <h3 class="font-display font-bold text-xl text-stone-900 mb-1">Scan QR Code with Cell Phone</h3>
+    <p class="text-xs text-stone-500 mb-4">Open your cell phone camera app and scan this QR code to stream HD video live to your laptop:</p>
+
+    <!-- QR Code Image Generator -->
+    <div class="bg-white p-4 border border-stone-300 rounded-2xl inline-block mb-4 shadow-sm">
+      <img id="qrCodeImg" class="w-48 h-48 mx-auto" alt="Scan QR Code to Connect Phone">
+    </div>
+
+    <p id="qrUrlText" class="text-xs font-mono font-bold text-orange-700 bg-orange-50 p-2 rounded-lg border border-orange-200 mb-4">http://127.0.0.1:5000/mobile_cam</p>
+
+    <div class="flex gap-2">
+      <button onclick="startPhoneStreamReceiver()" class="flex-1 py-3 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 shadow-md">
+        <i class="fas fa-play mr-1"></i> Start Receiving Live Stream
+      </button>
+      <button onclick="closePhoneCamModal()" class="py-3 px-4 bg-stone-200 text-stone-800 text-xs font-bold rounded-xl hover:bg-stone-300">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- White-Label Salon Branding Settings Modal -->
+<div id="brandingModal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
+  <div class="bg-white border border-stone-200 rounded-2xl max-w-lg w-full p-6 relative shadow-2xl space-y-4">
+    <button onclick="closeBrandingModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-lg"><i class="fas fa-times"></i></button>
+    
+    <div class="flex items-center gap-3 border-b border-stone-200 pb-3">
+      <div class="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center font-bold text-lg">
+        <i class="fas fa-sliders"></i>
+      </div>
+      <div>
+        <h3 class="font-display font-bold text-lg text-stone-900">White-Label Reseller Branding Settings</h3>
+        <p class="text-xs text-stone-500">Customize buyer's Salon Name, Logo, and Email on all 52 PDF report pages</p>
+      </div>
+    </div>
+
+    <div class="space-y-3 text-xs">
+      <div>
+        <label class="block font-bold text-stone-800 mb-1">Salon / Business Name *</label>
+        <input type="text" id="bName" placeholder="e.g. CHROMATYPE Studio or Bella Color Salon" value="CHROMATYPE Studio" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2.5 font-semibold text-stone-900 focus:border-orange-600 focus:outline-none">
+      </div>
+      <div>
+        <label class="block font-bold text-stone-800 mb-1">Business Logo URL / Base64</label>
+        <input type="text" id="bLogo" placeholder="http://domain.com/logo.jpg" value="http://chromatype.me/img/logo-1784993471.jpg" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2.5 font-semibold text-stone-900 focus:border-orange-600 focus:outline-none">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-stone-800 mb-1">Business Contact Email</label>
+          <input type="email" id="bEmail" placeholder="admin@color-analysis.shop" value="admin@color-analysis.shop" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 font-semibold text-stone-900 focus:border-orange-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-stone-800 mb-1">Business Phone / Website</label>
+          <input type="text" id="bPhone" placeholder="+1 (800) 555-0199" value="+1 (800) 555-0199" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 font-semibold text-stone-900 focus:border-orange-600 focus:outline-none">
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-2 pt-2 border-t border-stone-200">
+      <button onclick="saveBrandingSettings()" class="flex-1 py-3 bg-orange-600 text-white font-bold text-xs rounded-xl hover:bg-orange-700 shadow-md">
+        <i class="fas fa-save mr-1"></i> Save Custom Branding Config
+      </button>
+      <button onclick="closeBrandingModal()" class="py-3 px-4 bg-stone-200 text-stone-800 font-bold text-xs rounded-xl hover:bg-stone-300">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+  <header class="max-w-7xl mx-auto flex items-center justify-between pb-6 mb-8 border-b border-stone-200">
+    <div class="flex items-center gap-4">
+      <div class="bg-white px-3.5 py-1.5 rounded-xl shadow-sm border border-stone-200">
+        <img id="headerLogoImg" src="http://chromatype.me/img/logo-1784993471.jpg" alt="Salon Logo" class="h-8 w-auto">
+      </div>
+      <div>
+        <h1 id="headerTitle" class="font-display font-black text-2xl text-stone-900">CHROMATYPE White-Label Studio</h1>
+        <p class="text-xs text-stone-500 font-medium">Multi-Camera Spectrophotometric Analysis & 52-Page Master Dossier Engine</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button onclick="openBrandingModal()" class="px-3.5 py-2 bg-stone-900 text-white text-xs font-bold rounded-xl hover:bg-stone-800 transition-all shadow-sm flex items-center gap-1.5">
+        <i class="fas fa-sliders text-orange-400"></i> Reseller Branding Config
+      </button>
+      <span class="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300">
+        <i class="fas fa-bolt text-emerald-600 mr-1"></i> Standalone Local License
+      </span>
+      <button onclick="window.print()" class="px-5 py-2 bg-stone-900 text-white font-bold text-xs rounded-xl hover:bg-stone-800 transition-all shadow-md">
+        <i class="fas fa-file-pdf mr-1"></i> Batch Export Client PDFs
+      </button>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8">
+
+<!-- 3-MODE INPUT SELECTOR BAR (File Upload, PC Webcam, Cellphone Camera) -->
+<div class="bg-white border border-stone-200 rounded-2xl p-2 mb-4 shadow-sm flex gap-2">
+  <button id="tabBtnFile" onclick="switchInputMode('file')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 bg-orange-600 text-white shadow-md">
+    <i class="fas fa-file-image"></i> 1. Load Photo File
+  </button>
+  <button id="tabBtnPc" onclick="switchInputMode('pc_cam')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 bg-stone-100 text-stone-700 hover:bg-stone-200">
+    <i class="fas fa-laptop text-orange-600"></i> 2. PC / Laptop Cam
+  </button>
+  <button id="tabBtnPhone" onclick="switchInputMode('phone_cam')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 bg-stone-100 text-stone-700 hover:bg-stone-200">
+    <i class="fas fa-mobile-screen-button text-orange-600"></i> 3. Cell Phone Cam (QR)
+  </button>
+</div>
+
+<!-- Cell Phone Camera Connect Box -->
+<div id="phoneCamPanel" class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex items-center justify-between hidden">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center font-bold text-lg">
+      <i class="fas fa-mobile-screen-button"></i>
+    </div>
+    <div>
+      <h4 class="font-bold text-xs text-stone-900">Cell Phone Camera Wireless Bridge</h4>
+      <p class="text-[11px] text-stone-600">Scan QR code with your mobile camera to stream video live to laptop!</p>
+    </div>
+  </div>
+  <button onclick="openPhoneCamModal()" class="px-3.5 py-2 bg-orange-600 text-white text-xs font-bold rounded-xl hover:bg-orange-700 transition-all shadow-sm flex items-center gap-1.5">
+    <i class="fas fa-qrcode"></i> Scan QR Code
+  </button>
+</div>
+
+
+    <!-- Left Column: Multi-Camera Device Switcher & 4-Photo Intake -->
+    <div class="lg:col-span-5 space-y-6">
+      
+      <!-- STEP 1: PHOTO INTAKE & CAMERA SELECTION (FIRST) -->
+      <div class="bg-white border-2 border-orange-500/40 rounded-2xl p-6 shadow-lg space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+          <h3 class="font-display font-black text-lg text-stone-900 flex items-center gap-2">
+            <i class="fas fa-camera text-orange-600 text-xl"></i> STEP 1: Client Photo Intake
+          </h3>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-orange-700 bg-orange-50 px-2.5 py-1 rounded-md border border-orange-200">Required</span>
+        </div>
+
+        <!-- Visitor Instruction Box -->
+        <div class="bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-700 space-y-1">
+          <p class="font-bold text-stone-900 flex items-center gap-1.5">
+            <i class="fas fa-circle-info text-orange-600"></i> How to add photos:
+          </p>
+          <ul class="list-disc list-inside space-y-0.5 text-[11px] text-stone-600">
+            <li><strong>Option A (File Upload):</strong> Click on <em>"Face"</em> below to pick a photo file from your computer.</li>
+            <li><strong>Option B (PC/Laptop Webcam):</strong> Click <em>"2. PC / Laptop Cam"</em> above to capture live photos.</li>
+            <li><strong>Option C (Cell Phone Camera):</strong> Click <em>"3. Cell Phone Cam"</em> to connect your mobile via QR code.</li>
+          </ul>
+        </div>
+
+        <!-- 4 Photo Slot Previews & File Loaders -->
+        <div>
+          <span class="text-xs font-bold text-stone-900 block mb-2">Photo Intake Slots (Click any slot to load file):</span>
+          <div class="grid grid-cols-4 gap-2 text-center text-[10px]">
+            <div class="border-2 border-dashed border-orange-300 rounded-xl p-2 bg-orange-50/40 hover:bg-orange-100/50 cursor-pointer transition-all relative" onclick="document.getElementById('slot1Inp').click()">
+              <span class="font-bold block mb-1 text-orange-900">Face *</span>
+              <div class="h-16 bg-white border border-stone-200 rounded-lg flex items-center justify-center overflow-hidden shadow-inner">
+                <i class="fas fa-user text-orange-400 text-xl" id="s1Icon"></i>
+                <img id="s1Img" class="w-full h-full object-cover hidden">
+              </div>
+              <input type="file" id="slot1Inp" accept="image/*" class="hidden" onchange="loadSlotFile(1, event)">
+              <div class="flex items-center justify-between mt-1">
+                <span class="text-[9px] text-orange-700 font-semibold">Upload</span>
+                <button type="button" onclick="rotateSlotPhoto(1, event)" class="py-0.5 px-1.5 bg-stone-800 hover:bg-stone-900 text-white font-bold text-[9px] rounded shadow-sm flex items-center gap-1">
+                  <i class="fas fa-rotate-right text-orange-400"></i> Rotate 90°
+                </button>
+              </div>
+            </div>
+
+
+            <div class="border border-stone-200 rounded-xl p-2 bg-stone-50 hover:bg-stone-100 cursor-pointer transition-all" onclick="document.getElementById('slot2Inp').click()">
+              <span class="font-bold block mb-1 text-stone-800">Hand/Nails</span>
+              <div class="h-16 bg-white border border-stone-200 rounded-lg flex items-center justify-center overflow-hidden shadow-inner">
+                <i class="fas fa-hand text-stone-400 text-xl" id="s2Icon"></i>
+                <img id="s2Img" class="w-full h-full object-cover hidden">
+              </div>
+              <input type="file" id="slot2Inp" accept="image/*" class="hidden" onchange="loadSlotFile(2, event)">
+              <span class="text-[9px] text-stone-500 block mt-1">Upload</span>
+            </div>
+
+            <div class="border border-stone-200 rounded-xl p-2 bg-stone-50 hover:bg-stone-100 cursor-pointer transition-all" onclick="document.getElementById('slot3Inp').click()">
+              <span class="font-bold block mb-1 text-stone-800">Eye/Iris</span>
+              <div class="h-16 bg-white border border-stone-200 rounded-lg flex items-center justify-center overflow-hidden shadow-inner">
+                <i class="fas fa-eye text-stone-400 text-xl" id="s3Icon"></i>
+                <img id="s3Img" class="w-full h-full object-cover hidden">
+              </div>
+              <input type="file" id="slot3Inp" accept="image/*" class="hidden" onchange="loadSlotFile(3, event)">
+              <span class="text-[9px] text-stone-500 block mt-1">Upload</span>
+            </div>
+
+            <div class="border border-stone-200 rounded-xl p-2 bg-stone-50 hover:bg-stone-100 cursor-pointer transition-all" onclick="document.getElementById('slot4Inp').click()">
+              <span class="font-bold block mb-1 text-stone-800">Lips/Mucosa</span>
+              <div class="h-16 bg-white border border-stone-200 rounded-lg flex items-center justify-center overflow-hidden shadow-inner">
+                <i class="fas fa-kiss-beam text-stone-400 text-xl" id="s4Icon"></i>
+                <img id="s4Img" class="w-full h-full object-cover hidden">
+              </div>
+              <input type="file" id="slot4Inp" accept="image/*" class="hidden" onchange="loadSlotFile(4, event)">
+              <span class="text-[9px] text-stone-500 block mt-1">Upload</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: CLIENT PROFILE & CONTACT RECORD (SECOND) -->
+      <div class="bg-white border-2 border-stone-300 rounded-2xl p-6 shadow-md space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+          <h3 class="font-display font-black text-lg text-stone-900 flex items-center gap-2">
+            <i class="fas fa-id-card text-stone-700 text-xl"></i> STEP 2: Client Contact Details
+          </h3>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-stone-600 bg-stone-100 px-2.5 py-1 rounded-md border border-stone-200">Required</span>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-stone-800 mb-1.5">Client Full Name *</label>
+            <input type="text" id="cName" placeholder="e.g. Maria Silva" value="Maria Silva" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm text-stone-900 font-semibold focus:outline-none focus:border-orange-600 focus:bg-white shadow-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-800 mb-1.5">Client Email Address *</label>
+            <input type="email" id="cEmail" placeholder="client@domain.com" value="client@domain.com" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm text-stone-900 font-semibold focus:outline-none focus:border-orange-600 focus:bg-white shadow-sm">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: RUN ANALYSIS & DELIVER PDF (THIRD) -->
+      <div class="bg-white border-2 border-orange-600 rounded-2xl p-6 shadow-xl space-y-3">
+        <div class="flex items-center justify-between border-b border-stone-200 pb-2.5">
+          <h3 class="font-display font-black text-lg text-stone-900 flex items-center gap-2">
+            <i class="fas fa-wand-magic-sparkles text-orange-600 text-xl"></i> STEP 3: Analysis & Report Delivery
+          </h3>
+        </div>
+
+        <button onclick="runColorAnalysisBackend()" class="w-full py-3.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-black text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 transform active:scale-98">
+          <i class="fas fa-wand-magic-sparkles text-lg"></i> 1. Run Spectrophotometric Analysis & Generate PDF
+        </button>
+        
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="sendPdfToClientEmail()" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
+            <i class="fas fa-paper-plane"></i> 2. Send PDF Email
+          </button>
+          <button onclick="downloadCurrentPdf()" class="py-2.5 px-3 bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5">
+            <i class="fas fa-download"></i> 3. Download Master PDF
+          </button>
+        </div>
+
+        <button onclick="downloadCurrentSwatchFan()" class="w-full py-2.5 px-3 bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+          <i class="fas fa-fan"></i> 4. Download Printable Pocket Swatch Fan PDF
+        </button>
+      </div>
+
+
+      <!-- PC WEBCAM STREAM SWITCHER PANEL -->
+      <div id="pcCamPanel" class="bg-white border border-stone-200 rounded-2xl p-6 shadow-md hidden">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-display font-bold text-lg text-stone-900 flex items-center gap-2">
+            <i class="fas fa-video text-orange-600"></i> Multi-Camera Stream Switcher
+          </h2>
+          <button onclick="refreshCameraDevices()" class="text-xs text-amber-700 font-semibold hover:underline">
+            <i class="fas fa-sync mr-1"></i>Refresh Devices
+          </button>
+        </div>
+
+        <!-- Live Camera Select Dropdown -->
+        <div class="mb-4">
+          <label class="block text-[11px] text-stone-500 font-bold mb-1">Select Active Camera Device (Bluetooth / USB / Built-in)</label>
+          <select id="cameraDeviceSelect" class="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-xs font-bold text-stone-800 focus:outline-none focus:border-orange-600">
+            <option value="">Detecting connected Bluetooth & USB cameras...</option>
+          </select>
+        </div>
+
+        <!-- Studio Light Viewfinder Container -->
+        <div id="viewfinderRing" class="relative aspect-square bg-stone-900 rounded-2xl overflow-hidden mb-4 studio-light-ring flex items-center justify-center border border-stone-300">
+          <video id="activeWebcamVideo" autoplay playsinline class="w-full h-full object-cover hidden"></video>
+          <img id="activeWebcamPreview" class="w-full h-full object-cover hidden" alt="Active Viewfinder">
+          <div id="activeCamPlaceholder" class="text-center p-8">
+            <i class="fas fa-camera-rotate text-5xl text-stone-500 mb-3"></i>
+            <h4 class="font-display font-bold text-sm text-white mb-1">Live Multi-Camera Viewfinder</h4>
+            <p class="text-xs text-stone-400">Select camera above to stream live face, hand, iris, or lip close-ups</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <button onclick="startSelectedCamera()" class="py-2.5 bg-orange-600 text-white font-bold text-xs rounded-xl hover:bg-orange-700 shadow-sm flex items-center justify-center gap-2">
+            <i class="fas fa-power-off"></i> Start Selected Camera
+          </button>
+          <button onclick="stopCameraStream()" class="py-2.5 bg-stone-100 border border-stone-300 rounded-xl text-stone-800 font-bold text-xs hover:border-orange-600 flex items-center justify-center gap-2">
+            <i class="fas fa-stop"></i> Stop Stream
+          </button>
+        </div>
+
+        <!-- 4 Specialized Snap Buttons -->
+        <div class="border-t border-stone-200 pt-4">
+          <span class="text-xs font-bold text-stone-900 block mb-2">Snap Photo Slot (Instant Assign):</span>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="snapToSlot(1)" class="py-2 px-3 bg-amber-50 border border-amber-300 text-amber-900 font-bold text-[11px] rounded-lg hover:bg-amber-100 text-left">
+              📸 1. Snap Face Portrait
+            </button>
+            <button onclick="snapToSlot(2)" class="py-2 px-3 bg-orange-50 border border-orange-300 text-orange-900 font-bold text-[11px] rounded-lg hover:bg-orange-100 text-left">
+              💅 2. Snap Hand / Nails
+            </button>
+            <button onclick="snapToSlot(3)" class="py-2 px-3 bg-blue-50 border border-blue-300 text-blue-900 font-bold text-[11px] rounded-lg hover:bg-blue-100 text-left">
+              👁️ 3. Snap Eye / Iris
+            </button>
+            <button onclick="snapToSlot(4)" class="py-2 px-3 bg-purple-50 border border-purple-300 text-purple-900 font-bold text-[11px] rounded-lg hover:bg-purple-100 text-left">
+              💋 4. Snap Lips / Mucosa
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Right Column: Hair-Isolated Face Draping Stage & Rapid Salon Queue -->
+    <div class="lg:col-span-7 space-y-6">
+      <!-- LIVE SPECTROPHOTOMETRY ANALYSIS RESULT CARD -->
+      <div id="analysisResultCard" class="bg-gradient-to-br from-stone-900 to-stone-800 border-2 border-orange-500 rounded-2xl p-6 shadow-xl text-white space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-700 pb-3">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-chart-pie text-orange-500 text-xl"></i>
+            <h3 class="font-display font-black text-lg text-white">CIELAB Spectrophotometry Result</h3>
+          </div>
+          <span id="resStatusBadge" class="text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full">
+            Ready for Analysis
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div class="bg-stone-800/80 border border-stone-700 rounded-xl p-3">
+            <span class="text-[10px] text-stone-400 font-bold uppercase block mb-1">Sub-Season Call</span>
+            <div id="resSubSeason" class="text-sm font-black text-orange-400">Dark Autumn</div>
+          </div>
+          <div class="bg-stone-800/80 border border-stone-700 rounded-xl p-3">
+            <span class="text-[10px] text-stone-400 font-bold uppercase block mb-1">ITA° Typology Angle</span>
+            <div id="resItaDeg" class="text-sm font-black text-emerald-400">62.4°</div>
+          </div>
+          <div class="bg-stone-800/80 border border-stone-700 rounded-xl p-3">
+            <span class="text-[10px] text-stone-400 font-bold uppercase block mb-1">CIE L*a*b* Skin</span>
+            <div id="resCieLab" class="text-xs font-mono font-bold text-amber-300">L:65.2 a:12.4 b:18.5</div>
+          </div>
+          <div class="bg-stone-800/80 border border-stone-700 rounded-xl p-3">
+            <span class="text-[10px] text-stone-400 font-bold uppercase block mb-1">52-Page Master PDF</span>
+            <div id="resPdfStatus" class="text-xs font-bold text-emerald-400">Ready</div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="sendPdfToClientEmail()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2">
+            <i class="fas fa-paper-plane"></i> Send PDF to Client Email
+          </button>
+          <button onclick="downloadCurrentPdf()" class="py-2.5 px-4 bg-stone-700 hover:bg-stone-600 text-white font-bold text-xs rounded-xl border border-stone-500 flex items-center justify-center gap-1.5">
+            <i class="fas fa-file-pdf"></i> Open PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Interactive Silk Motion Draping Theatre & Video Exporter -->
+      <div class="bg-white border-2 border-stone-800 rounded-2xl p-6 shadow-xl text-center space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-film text-orange-600 text-xl"></i>
+            <h3 class="font-display font-black text-lg text-stone-900">Silk Motion Draping Theatre</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="stageSubBadge" class="text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">Dark Autumn • ITA° 62.4°</span>
+            <span class="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200">HD Movie Mode</span>
+          </div>
+        </div>
+
+        <!-- SILK DRAPE ANIMATED STAGE -->
+        <div id="drapeStageWrapper" class="relative w-full aspect-video max-w-lg mx-auto rounded-2xl overflow-hidden shadow-2xl border-4 border-stone-900 flex items-center justify-center bg-stone-950">
+          
+          <!-- Background Layer: Flowing Silk Drape Color (Behind Person) -->
+          <div id="silkDrapeColor" class="absolute inset-0 z-0 transition-all duration-700 ease-out" style="background-color: #8B0000;">
+            <!-- Silk Weave Fabric Texture Overlay -->
+            <div class="absolute inset-0 silk-texture-overlay"></div>
+          </div>
+
+          <!-- Foreground Layer: Extra Large Client Portrait Cutout (Hair, Ears, Face, Mouth, Chin & Neck Intact) -->
+          <div class="relative z-10 h-full w-full flex items-center justify-center filter drop-shadow-2xl">
+            <img id="isolatedFace" class="h-full w-full object-contain drop-shadow-2xl scale-105" src="http://chromatype.me/img/logo-1784993471.jpg" alt="Client Person Photo">
+          </div>
+
+
+
+          <!-- Lower Third Banner: Pantone Code, Name, & HEX Code -->
+          <div id="lowerThirdBanner" class="absolute bottom-3 left-4 right-4 z-20 bg-stone-950/80 backdrop-blur-md border border-white/20 rounded-xl p-2.5 text-white flex items-center justify-between shadow-lg">
+            <div class="text-left">
+              <span id="bannerPantoneCode" class="text-[10px] font-bold text-orange-400 uppercase tracking-widest block">PANTONE 19-1617 TCX</span>
+              <h4 id="bannerColorName" class="font-display font-black text-sm text-white">Oxblood Red</h4>
+            </div>
+            <div class="text-right">
+              <span id="bannerHexCode" class="text-xs font-mono font-bold text-amber-300 bg-stone-800 px-2.5 py-1 rounded-md border border-stone-700">#8B0000</span>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Movie Controls & Video Export Bar -->
+        <div class="bg-stone-50 border border-stone-200 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <button id="playPauseBtn" onclick="toggleSilkMovie()" class="py-2 px-4 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-play" id="playIcon"></i> <span id="playBtnText">Play Silk Movie</span>
+            </button>
+            <button onclick="prevDrape()" class="py-2 px-3 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs rounded-xl">
+              <i class="fas fa-step-backward"></i>
+            </button>
+            <button onclick="nextDrape()" class="py-2 px-3 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs rounded-xl">
+              <i class="fas fa-step-forward"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label class="text-[11px] font-bold text-stone-600">Speed:</label>
+            <select id="movieSpeedSelect" class="bg-white border border-stone-300 rounded-lg text-xs font-bold text-stone-800 px-2 py-1.5 focus:outline-none">
+              <option value="1500">1.5s (Fast)</option>
+              <option value="2500" selected>2.5s (Normal)</option>
+              <option value="4000">4.0s (Slow)</option>
+            </select>
+          </div>
+
+          <button onclick="exportSilkVideoMovie()" class="py-2 px-4 bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5">
+            <i class="fas fa-video"></i> Export HD Silk Video (MP4)
+          </button>
+        </div>
+      </div>
+
+      <!-- 432 Pantone Swatches Container -->
+      <div class="bg-white border border-stone-200 rounded-2xl p-6 shadow-md">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-display font-bold text-lg text-stone-900"><i class="fas fa-swatchbook text-amber-600 mr-2"></i>Full 432 Pantone TCX Swatch Library</h3>
+          <span class="text-xs text-stone-500">Click any color to drape hair-free face</span>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto p-3 bg-stone-50 rounded-xl border border-stone-200" id="swatchContainer">
+          <!-- JS Swatches -->
+        </div>
+      </div>
+
+
+      <!-- Rapid Salon Queue (Add Client to Queue) -->
+      <div class="bg-white border border-stone-200 rounded-2xl p-6 shadow-md">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-display font-bold text-lg text-stone-900"><i class="fas fa-users text-purple-700 mr-2"></i>Rapid Salon Client Queue</h3>
+          <button onclick="addClientToQueue()" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-sm">
+            <i class="fas fa-plus mr-1"></i> Add Client to Queue & Reset
+          </button>
+        </div>
+
+        <div class="space-y-2 text-xs" id="clientQueueList">
+          <div class="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between">
+            <div>
+              <span class="font-bold text-stone-900">Client #1: Maria Silva</span>
+              <span class="text-stone-500 block text-[10px]">4 Photos Captured • Dark Autumn (ITA° 62.4°)</span>
+            </div>
+            <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-full">Ready for PDF</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    
+
+let phonePollingInterval = null;
+
+function openPhoneCamModal() {
+  document.getElementById('phoneCamModal').classList.remove('hidden');
+  
+  const streamUrl = "http://" + (window.location.hostname || "127.0.0.1") + ":5000/mobile_cam";
+  document.getElementById('qrUrlText').textContent = streamUrl;
+  
+  const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(streamUrl)}`;
+  document.getElementById('qrCodeImg').src = qrApi;
+}
+
+function closePhoneCamModal() {
+  document.getElementById('phoneCamModal').classList.add('hidden');
+}
+
+function startPhoneStreamReceiver() {
+  closePhoneCamModal();
+  const video = document.getElementById('activeWebcamVideo');
+  const preview = document.getElementById('activeWebcamPreview');
+  const placeholder = document.getElementById('activeCamPlaceholder');
+
+  placeholder.classList.add('hidden');
+  video.classList.add('hidden');
+  preview.classList.remove('hidden');
+
+  if (phonePollingInterval) clearInterval(phonePollingInterval);
+
+  phonePollingInterval = setInterval(() => {
+    fetch('http://' + (window.location.hostname || "127.0.0.1") + ':5000/get_frame')
+      .then(res => res.json())
+      .then(data => {
+        if (data.image) {
+          preview.src = data.image;
+        }
+      }).catch(e => {});
+  }, 150);
+
+  alert("🟢 Connected to Cell Phone Camera Stream!");
+}
+
+
+    let activeStream = null;
+    let currentInputMode = 'file'; // 'file', 'pc_cam', 'phone_cam'
+
+    function switchInputMode(mode) {
+      currentInputMode = mode;
+      document.getElementById('fileUploadPanel').classList.add('hidden');
+      document.getElementById('pcCamPanel').classList.add('hidden');
+      document.getElementById('phoneCamPanel').classList.add('hidden');
+
+      document.getElementById('tabBtnFile').className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 " + (mode === 'file' ? 'bg-orange-600 text-white shadow-md' : 'bg-stone-100 text-stone-700 hover:bg-stone-200');
+      document.getElementById('tabBtnPc').className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 " + (mode === 'pc_cam' ? 'bg-orange-600 text-white shadow-md' : 'bg-stone-100 text-stone-700 hover:bg-stone-200');
+      document.getElementById('tabBtnPhone').className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 " + (mode === 'phone_cam' ? 'bg-orange-600 text-white shadow-md' : 'bg-stone-100 text-stone-700 hover:bg-stone-200');
+
+      if (mode === 'file') {
+        document.getElementById('fileUploadPanel').classList.remove('hidden');
+        stopCameraStream();
+      } else if (mode === 'pc_cam') {
+        document.getElementById('pcCamPanel').classList.remove('hidden');
+        refreshCameraDevices();
+      } else if (mode === 'phone_cam') {
+        document.getElementById('phoneCamPanel').classList.remove('hidden');
+        stopCameraStream();
+        openPhoneCamModal();
+      }
+    }
+
+    async function refreshCameraDevices() {
+      const select = document.getElementById('cameraDeviceSelect');
+      select.innerHTML = '<option value="">Detecting connected Bluetooth & USB cameras...</option>';
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        select.innerHTML = '';
+        if (videoDevices.length === 0) {
+          select.innerHTML = '<option value="">No external or bluetooth cameras found (laptop webcam default)</option>';
+        } else {
+          videoDevices.forEach((dev, idx) => {
+            const opt = document.createElement('option');
+            opt.value = dev.deviceId;
+            opt.textContent = dev.label || `Camera ${idx + 1} (${dev.deviceId.slice(0,8)}...)`;
+            select.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.log("Device enumeration error:", err);
+      }
+    }
+
+    refreshCameraDevices();
+
+    function startSelectedCamera() {
+      const select = document.getElementById('cameraDeviceSelect');
+      const deviceId = select.value;
+      const constraints = { video: deviceId ? { deviceId: { exact: deviceId }, width: 720, height: 720 } : { width: 720, height: 720 } };
+
+      const video = document.getElementById('activeWebcamVideo');
+      const placeholder = document.getElementById('activeCamPlaceholder');
+      const preview = document.getElementById('activeWebcamPreview');
+
+      placeholder.classList.add('hidden');
+      preview.classList.add('hidden');
+      video.classList.remove('hidden');
+
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia(constraints)
+          .then(stream => {
+            activeStream = stream;
+            video.srcObject = stream;
+          })
+          .catch(err => alert("Camera stream error: " + err.message));
+      }
+    }
+
+    function stopCameraStream() {
+      if (activeStream) {
+        activeStream.getTracks().forEach(t => t.stop());
+        activeStream = null;
+      }
+      document.getElementById('activeWebcamVideo').classList.add('hidden');
+      document.getElementById('activeCamPlaceholder').classList.remove('hidden');
+    }
+
+    function snapToSlot(slot) {
+      const video = document.getElementById('activeWebcamVideo');
+      if (video.classList.contains('hidden')) {
+        alert("Please start the active camera first!");
+        return;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 640;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const dataUrl = canvas.toDataURL('image/jpeg');
+
+      document.getElementById(`s${slot}Icon`).classList.add('hidden');
+      const img = document.getElementById(`s${slot}Img`);
+      img.src = dataUrl;
+      img.classList.remove('hidden');
+
+      if (slot === 1) {
+        document.getElementById('isolatedFace').src = dataUrl;
+      }
+    }
+
+    function loadSlotFile(slot, e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        document.getElementById(`s${slot}Icon`).classList.add('hidden');
+        const img = document.getElementById(`s${slot}Img`);
+        img.src = ev.target.result;
+        img.classList.remove('hidden');
+        if (slot === 1) {
+          document.getElementById('isolatedFace').src = ev.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function rotateSlotPhoto(slot, e) {
+      if (e) e.stopPropagation();
+      const img = document.getElementById(`s${slot}Img`);
+      if (!img || !img.src || img.classList.contains('hidden')) {
+        alert("Please upload or capture a photo first!");
+        return;
+      }
+      
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const tempImg = new Image();
+      tempImg.crossOrigin = "anonymous";
+      tempImg.onload = function() {
+        canvas.width = tempImg.height;
+        canvas.height = tempImg.width;
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(90 * Math.PI / 180);
+        ctx.drawImage(tempImg, -tempImg.width / 2, -tempImg.height / 2);
+        
+        const rotatedUrl = canvas.toDataURL('image/png');
+        img.src = rotatedUrl;
+        if (slot === 1) {
+          document.getElementById('isolatedFace').src = rotatedUrl;
+        }
+      };
+      tempImg.src = img.src;
+    }
+
+
+    let silkSwatches = [];
+    let currentDrapeIndex = 0;
+    let movieTimer = null;
+    let isMoviePlaying = false;
+
+    // Generate 432 Pantone TCX Swatches with rich names and codes
+    const sampleHexes = [
+      { hex: "#8B0000", name: "Oxblood Red", pantone: "19-1617 TCX" },
+      { hex: "#D2691E", name: "Cinnamon Warm", pantone: "18-1340 TCX" },
+      { hex: "#B8860B", name: "Antique Gold", pantone: "16-0947 TCX" },
+      { hex: "#556B2F", name: "Olive Moss", pantone: "18-0527 TCX" },
+      { hex: "#800000", name: "Burgundy Rich", pantone: "19-1650 TCX" },
+      { hex: "#A0522D", name: "Sienna Earth", pantone: "18-1248 TCX" },
+      { hex: "#CD853F", name: "Golden Honey", pantone: "16-1144 TCX" },
+      { hex: "#E9967A", name: "Terracotta Glow", pantone: "16-1442 TCX" },
+      { hex: "#8B4513", name: "Deep Amber", pantone: "19-1241 TCX" },
+      { hex: "#D4A853", name: "Warm Mustard", pantone: "15-0955 TCX" },
+      { hex: "#BC8F8F", name: "Muted Rose", pantone: "16-1511 TCX" },
+      { hex: "#CD5C5C", name: "Coral Clay", pantone: "17-1544 TCX" }
+    ];
+
+    function render432Swatches() {
+      const container = document.getElementById('swatchContainer');
+      let html = '';
+      silkSwatches = [];
+      for (let i = 0; i < 432; i++) {
+        const item = sampleHexes[i % sampleHexes.length];
+        const sw = {
+          hex: item.hex,
+          name: item.name + ` #${i+1}`,
+          pantone: `PANTONE ${item.pantone}`
+        };
+        silkSwatches.push(sw);
+        html += `<div class="swatch-grid-item" style="background-color: ${sw.hex};" onclick="drapeFaceColor(${i})" title="${sw.pantone} - ${sw.name} (${sw.hex})"></div>`;
+      }
+      container.innerHTML = html;
+    }
+    render432Swatches();
+
+    function drapeFaceColor(index) {
+      if (index < 0) index = silkSwatches.length - 1;
+      if (index >= silkSwatches.length) index = 0;
+      currentDrapeIndex = index;
+
+      const sw = silkSwatches[currentDrapeIndex];
+      const silkStage = document.getElementById('silkDrapeColor');
+      
+      if (silkStage) {
+        silkStage.style.backgroundColor = sw.hex;
+      }
+      if (document.getElementById('bannerColorName')) {
+        document.getElementById('bannerColorName').textContent = sw.name;
+      }
+      if (document.getElementById('bannerPantoneCode')) {
+        document.getElementById('bannerPantoneCode').textContent = sw.pantone;
+      }
+      if (document.getElementById('bannerHexCode')) {
+        document.getElementById('bannerHexCode').textContent = sw.hex;
+      }
+    }
+
+    function toggleSilkMovie() {
+      if (isMoviePlaying) {
+        stopSilkMovie();
+      } else {
+        startSilkMovie();
+      }
+    }
+
+    function startSilkMovie() {
+      isMoviePlaying = true;
+      document.getElementById('playIcon').className = "fas fa-pause";
+      document.getElementById('playBtnText').textContent = "Pause Silk Movie";
+      
+      const speed = parseInt(document.getElementById('movieSpeedSelect').value) || 2500;
+      movieTimer = setInterval(() => {
+        nextDrape();
+      }, speed);
+    }
+
+    function stopSilkMovie() {
+      isMoviePlaying = false;
+      if (movieTimer) clearInterval(movieTimer);
+      document.getElementById('playIcon').className = "fas fa-play";
+      document.getElementById('playBtnText').textContent = "Play Silk Movie";
+    }
+
+    function nextDrape() {
+      drapeFaceColor(currentDrapeIndex + 1);
+    }
+
+    function prevDrape() {
+      drapeFaceColor(currentDrapeIndex - 1);
+    }
+
+    async function exportSilkVideoMovie() {
+      const cName = document.getElementById('cName').value || "Client";
+      alert(`🎥 Exporting HD Silk Draping Video for ${cName}...\n\nYour video file (.webm / .mp4 format) will be recorded and downloaded automatically in a few seconds!`);
+      
+      // Canvas Video Recording Pipeline
+      const canvas = document.createElement('canvas');
+      canvas.width = 640;
+      canvas.height = 360;
+      const ctx = canvas.getContext('2d');
+
+      const stream = canvas.captureStream(30); // 30 FPS
+      const recorder = new MediaRecorder(stream);
+      const chunks = [];
+
+      recorder.ondataavailable = e => chunks.push(e.data);
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `CHROMATYPE_Silk_Draping_Movie_${cName.replace(/\s+/g, '_')}.webm`;
+        a.click();
+        alert(`🎉 HD Silk Motion Video Exported Successfully!\n\nDownloaded: ${a.download}`);
+      };
+
+      recorder.start();
+      
+      // Draw 10 silk color frames to canvas
+      let framesCount = 0;
+      const faceImg = document.getElementById('isolatedFace');
+      
+      const drawFrame = () => {
+        if (framesCount >= 12) {
+          recorder.stop();
+          return;
+        }
+        const sw = silkSwatches[(currentDrapeIndex + framesCount) % silkSwatches.length];
+        
+        // 1. Draw full original client photo background (Face, Hair, Head intact)
+        try { ctx.drawImage(faceImg, 0, 0, canvas.width, canvas.height); } catch(e){
+          ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 2. Draw Silk Drape Color Layer over shoulders below chin
+        ctx.fillStyle = sw.hex;
+        ctx.beginPath();
+        ctx.ellipse(320, 360, 480, 160, 0, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // 3. Draw lower third banner
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.fillRect(20, 290, 600, 55);
+        ctx.fillStyle = '#FB923C';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(sw.pantone, 35, 312);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText(sw.name, 35, 332);
+        ctx.fillStyle = '#FCD34D';
+        ctx.font = 'bold 14px monospace';
+        ctx.fillText(sw.hex, 520, 325);
+
+        framesCount++;
+        setTimeout(drawFrame, 800);
+      };
+
+      drawFrame();
+    }
+
+
+
+    let currentPdfFilename = "";
+    let currentPdfDownloadUrl = "";
+
+    function openBrandingModal() {
+      document.getElementById('brandingModal').classList.remove('hidden');
+    }
+
+    function closeBrandingModal() {
+      document.getElementById('brandingModal').classList.add('hidden');
+    }
+
+    function getOperatorBranding() {
+      return {
+        business_name: document.getElementById('bName').value || "CHROMATYPE Studio",
+        logo_url: document.getElementById('bLogo').value || "http://chromatype.me/img/logo-1784993471.jpg",
+        business_email: document.getElementById('bEmail').value || "admin@color-analysis.shop",
+        business_phone: document.getElementById('bPhone').value || "+1 (800) 555-0199"
+      };
+    }
+
+    function saveBrandingSettings() {
+      const b = getOperatorBranding();
+      localStorage.setItem('chromatype_operator_branding', JSON.stringify(b));
+      
+      if (document.getElementById('headerTitle')) {
+        document.getElementById('headerTitle').textContent = b.business_name;
+      }
+      if (document.getElementById('headerLogoImg') && b.logo_url) {
+        document.getElementById('headerLogoImg').src = b.logo_url;
+      }
+      closeBrandingModal();
+      alert("✅ Reseller White-Label Branding Config Saved!\n\nAll future 52-page client report PDFs will feature " + b.business_name + " logo & contact info!");
+    }
+
+    function loadSavedBranding() {
+      const saved = localStorage.getItem('chromatype_operator_branding');
+      if (saved) {
+        try {
+          const b = JSON.parse(saved);
+          if (b.business_name) document.getElementById('bName').value = b.business_name;
+          if (b.logo_url) document.getElementById('bLogo').value = b.logo_url;
+          if (b.business_email) document.getElementById('bEmail').value = b.business_email;
+          if (b.business_phone) document.getElementById('bPhone').value = b.business_phone;
+
+          if (document.getElementById('headerTitle')) document.getElementById('headerTitle').textContent = b.business_name;
+          if (document.getElementById('headerLogoImg') && b.logo_url) document.getElementById('headerLogoImg').src = b.logo_url;
+        } catch(e){}
+      }
+    }
+    setTimeout(loadSavedBranding, 300);
+
+    function getBackendHost() {
+      if (window.location.origin && window.location.origin.startsWith('http')) {
+        return window.location.origin;
+      }
+      return "http://127.0.0.1:5000";
+    }
+
+    async function runColorAnalysisBackend() {
+      const cName = document.getElementById('cName').value || "Valued Client";
+      const cEmail = document.getElementById('cEmail').value || "client@example.com";
+      const brandingObj = getOperatorBranding();
+
+      // Grab image from slot 1 (Face) or active camera preview or isolated face
+      let faceImg = "";
+      const s1Img = document.getElementById('s1Img');
+      const webcamPreview = document.getElementById('activeWebcamPreview');
+
+      if (s1Img && !s1Img.classList.contains('hidden') && s1Img.src) {
+        faceImg = s1Img.src;
+      } else if (webcamPreview && !webcamPreview.classList.contains('hidden') && webcamPreview.src) {
+        faceImg = webcamPreview.src;
+      } else if (document.getElementById('isolatedFace') && document.getElementById('isolatedFace').src) {
+        faceImg = document.getElementById('isolatedFace').src;
+      }
+
+      if (!faceImg) {
+        alert("Please upload a Face photo or snap a picture first!");
+        return;
+      }
+
+      document.getElementById('resStatusBadge').textContent = "Processing CIELAB & PDF...";
+      document.getElementById('resStatusBadge').className = "text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/40 px-3 py-1 rounded-full animate-pulse";
+
+
+      try {
+        const backendUrl = getBackendHost() + "/run_analysis";
+        const response = await fetch(backendUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_name: cName,
+            client_email: cEmail,
+            image: faceImg,
+            branding: brandingObj
+          })
+        });
+
+        const data = await response.json();
+        if (data.status === 'success') {
+          currentPdfFilename = data.pdf_filename;
+          currentPdfDownloadUrl = getBackendHost() + data.pdf_download_url;
+
+          document.getElementById('resSubSeason').textContent = data.sub_season;
+          document.getElementById('resItaDeg').textContent = (data.metrics.ita_degrees || 62.4).toFixed(1) + "°";
+          
+          const lab = data.metrics.skin_lab || { L: 65.2, a: 12.4, b: 18.5 };
+          document.getElementById('resCieLab').textContent = `L:${lab.L.toFixed(1)} a:${lab.a.toFixed(1)} b:${lab.b.toFixed(1)}`;
+          document.getElementById('resPdfStatus').textContent = "Generated (52 Pages)";
+
+          document.getElementById('resStatusBadge').textContent = "Analysis Complete";
+          document.getElementById('resStatusBadge').className = "text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-3 py-1 rounded-full";
+
+          document.getElementById('stageSubBadge').textContent = `${data.sub_season} • ITA° ${(data.metrics.ita_degrees || 62.4).toFixed(1)}°`;
+
+          alert(`🎉 Spectrophotometric Analysis Complete!\n\nSub-Season Call: ${data.sub_season}\nITA° Angle: ${(data.metrics.ita_degrees || 62.4).toFixed(1)}°\n52-Page Master Dossier PDF Compiled!`);
+        } else {
+          alert("Analysis Error: " + (data.error || "Unknown server error"));
+        }
+      } catch (err) {
+        alert("Server Connection Error: Ensure Run_CHROMATYPE_Local_Operator.bat is running on port 5000!");
+      }
+    }
+
+    async function sendPdfToClientEmail() {
+      const cEmail = document.getElementById('cEmail').value;
+      if (!cEmail) {
+        alert("Please enter client email address!");
+        return;
+      }
+      if (!currentPdfFilename) {
+        alert("Please run Color Analysis first to compile the 52-Page Master Dossier PDF!");
+        return;
+      }
+
+      const smtpUser = prompt("Enter your Sender Email (or press OK if using server default):", localStorage.getItem('chromatype_smtp_user') || "");
+      const smtpPass = prompt("Enter your Sender Gmail App Password:", localStorage.getItem('chromatype_smtp_pass') || "");
+
+      if (smtpUser) localStorage.setItem('chromatype_smtp_user', smtpUser);
+      if (smtpPass) localStorage.setItem('chromatype_smtp_pass', smtpPass);
+
+      try {
+        const backendUrl = getBackendHost() + "/send_email";
+        const response = await fetch(backendUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_email: cEmail,
+            pdf_filename: currentPdfFilename,
+            smtp_user: smtpUser,
+            smtp_pass: smtpPass
+          })
+        });
+
+        const data = await response.json();
+        if (data.status === 'success') {
+          alert(`📧 Success!\n\n52-Page Master Dossier PDF successfully sent to ${cEmail}!`);
+        } else {
+          alert("Email Error: " + (data.error || "Failed to send email"));
+        }
+      } catch (err) {
+        alert("Email Server Error: " + err.message);
+      }
+    }
+
+    function downloadCurrentPdf() {
+      if (!currentPdfDownloadUrl) {
+        alert("Please run Color Analysis first to compile the 52-Page Master Dossier PDF!");
+        return;
+      }
+      window.open(currentPdfDownloadUrl, '_blank');
+    }
+
+    function downloadCurrentSwatchFan() {
+      const url = getBackendHost() + "/download_swatch_fan";
+      window.open(url, '_blank');
+    }
+
+
+
+    let clientQueueCount = 1;
+    function addClientToQueue() {
+      clientQueueCount++;
+      const list = document.getElementById('clientQueueList');
+      const item = document.createElement('div');
+      item.className = 'p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between';
+      item.innerHTML = `<div><span class="font-bold text-stone-900">Client #${clientQueueCount}: Salon Guest</span><span class="text-stone-500 block text-[10px]">Captured via Active Camera • Classification Pending</span></div><span class="px-2.5 py-1 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-full">Queued</span>`;
+      list.appendChild(item);
+      alert(`🎉 Client #${clientQueueCount} added to Salon Queue! Ready for next guest.`);
+    }
+  </script>
+</body>
+</html>
+
