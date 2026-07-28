@@ -1,4 +1,9 @@
 import os
+
+backend_dir = r'C:\Users\dkven\color_analysis_backend'
+server_script_path = os.path.join(backend_dir, 'run_mobile_cam_server.py')
+
+server_code = r'''import os
 import json
 import socket
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -129,3 +134,9 @@ if __name__ == '__main__':
     print(f"🚀 CHROMATYPE ZERO-DEPENDENCY SERVER STARTED at {STREAM_URL}")
     server = HTTPServer(('0.0.0.0', PORT), MobileCamHandler)
     server.serve_forever()
+'''
+
+with open(server_script_path, 'w', encoding='utf-8') as f:
+    f.write(server_code)
+
+print("Saved pure Python http.server script run_mobile_cam_server.py!")
