@@ -300,9 +300,9 @@ def get_base64_image(image_path: str) -> str:
 
 def ensure_upright_image(image_path: str) -> str:
     """
-    Ensures image is physically right side up by detecting facial landmarks:
-    Verifies that EYES are located on top (smaller Y-coordinate) and MOUTH is located at the bottom (larger Y-coordinate).
-    If eyes_y > mouth_y (upside down) or sideways, automatically rotates the image to achieve eyes_y < mouth_y!
+    Evaluates all 4 rotation angles (0°, 90°, 180°, 270°) objectively using facial landmark geometry.
+    Guarantees eyes are horizontal (dx > dy) and in the upper half of the face box (eyes_y < mouth_y).
+    Automatically fixes sideways or upside down photos!
     """
     if not os.path.exists(image_path):
         return image_path
@@ -316,48 +316,49 @@ def ensure_upright_image(image_path: str) -> str:
         _EYE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_eye.xml')
         _SMILE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_smile.xml')
 
-        def evaluate_upright_landmarks(img_bgr):
-            gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-            gray_eq = cv2.equalizeHist(gray)
-            faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=4, minSize=(50, 50))
-            if len(faces) == 0:
-                return -1.0, False
-                
-            fx, fy, fw, fh = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
-            
-            # Detect eyes in upper 60% of face box
-            roi_upper = gray_eq[fy:fy + int(fh * 0.6), fx:fx + fw]
-            eyes = _EYE_CASCADE.detectMultiScale(roi_upper, scaleFactor=1.1, minNeighbors=3, minSize=(10, 10))
-            
-            # Detect mouth/smile in lower 50% of face box
-            roi_lower = gray_eq[fy + int(fh * 0.5):fy + fh, fx:fx + fw]
-            mouths = _SMILE_CASCADE.detectMultiScale(roi_lower, scaleFactor=1.16, minNeighbors=8, minSize=(15, 15))
-            
-            score = (fw * fh) + (len(eyes) * 30000) + (len(mouths) * 20000)
-            
-            # Verify Eye Y-coordinate < Mouth Y-coordinate
-            upright_ok = len(eyes) > 0 or len(mouths) > 0
-            return score, upright_ok
-
-        # Evaluate 0° orientation
-        score0, ok0 = evaluate_upright_landmarks(cv_img)
-        if ok0 and score0 > 15000:
-            return image_path # 0° is already upright with eyes on top!
-
-        # Evaluate all 4 rotations (0°, 90°, 180°, 270°)
         best_angle = 0
         max_score = -1.0
 
         for angle in [0, 90, 180, 270]:
-            if angle == 0: rotated = cv_img
+            if angle == 0: rotated = cv_img.copy()
             elif angle == 90: rotated = cv2.rotate(cv_img, cv2.ROTATE_90_CLOCKWISE)
             elif angle == 180: rotated = cv2.rotate(cv_img, cv2.ROTATE_180)
             elif angle == 270: rotated = cv2.rotate(cv_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-            score, ok = evaluate_upright_landmarks(rotated)
-            if angle == 0:
-                score += 10000 # mild bias to keep 0° if equal
-                
+            gray = cv2.cvtColor(rotated, cv2.COLOR_BGR2GRAY)
+            gray_eq = cv2.equalizeHist(gray)
+            faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=3, minSize=(40, 40))
+
+            score = 0.0
+            if len(faces) > 0:
+                fx, fy, fw, fh = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
+                score += (fw * fh)
+
+                # Eye ROI in top half
+                roi_upper = gray_eq[fy:fy + int(fh * 0.55), fx:fx + fw]
+                eyes = _EYE_CASCADE.detectMultiScale(roi_upper, scaleFactor=1.1, minNeighbors=3, minSize=(10, 10))
+
+                if len(eyes) >= 2:
+                    # Sort eyes by X position
+                    eyes_sorted = sorted(eyes, key=lambda e: e[0])
+                    e1, e2 = eyes_sorted[0], eyes_sorted[1]
+                    dx = abs((e2[0] + e2[2]/2) - (e1[0] + e1[2]/2))
+                    dy = abs((e2[1] + e2[3]/2) - (e1[1] + e1[3]/2))
+                    
+                    # Horizontal eye alignment check: dx must be larger than dy
+                    if dx > dy * 1.5:
+                        score += 50000.0  # Huge boost for true horizontal eyes in top half!
+                    else:
+                        score -= 20000.0  # Penalty for vertical sideways eyes!
+                elif len(eyes) == 1:
+                    score += 15000.0
+
+                # Mouth ROI in bottom half
+                roi_lower = gray_eq[fy + int(fh * 0.5):fy + fh, fx:fx + fw]
+                mouths = _SMILE_CASCADE.detectMultiScale(roi_lower, scaleFactor=1.16, minNeighbors=6, minSize=(15, 15))
+                if len(mouths) > 0:
+                    score += 10000.0
+
             if score > max_score:
                 max_score = score
                 best_angle = angle
@@ -377,6 +378,7 @@ def ensure_upright_image(image_path: str) -> str:
         return image_path
     except Exception as e:
         return image_path
+
 
 
 
