@@ -587,3 +587,117 @@ def generate_free_teaser_pdf(image_input, client_name="Valued Client", client_em
         os.remove(temp_html)
 
     return output_pdf_path
+
+
+
+# Extended Zone-by-Zone Makeup & Nail Polish Blueprint Data for 12 Sub-Seasons
+ZONE_MAKEUP_BLUEPRINTS = {
+    'Dark Autumn': {
+        'foundation': 'Warm golden or warm beige undertones. Avoid cool pink or alabaster foundations.',
+        'eyes': 'Deep bronze, warm espresso, burnt terracotta, olive gold. Eyeliner: Rich dark chocolate or deep forest green.',
+        'cheeks': 'Warm terracotta, deep peach, spicy coral. Apply along cheekbones sweeping upward toward temples.',
+        'lips': 'Rich brick red, deep warm berry, terracotta, spiced cinnamon. Avoid pale icy pinks.',
+        'chin_forehead': 'Light bronze contouring on forehead hair line and jawline for dimensional warmth.',
+        'nails': ['#8B0000', '#D2691E', '#B8860B', '#556B2F', '#800000', '#A0522D'],
+        'nail_names': ['Deep Oxblood', 'Warm Terracotta', 'Antique Gold', 'Olive Forest', 'Spiced Berry', 'Burnt Ochre']
+    },
+    'Warm Autumn': {
+        'foundation': 'Warm golden peach or golden beige foundation. Avoid cool ash tones.',
+        'eyes': 'Warm copper, amber gold, warm brown, moss green. Eyeliner: Espresso or warm bronze.',
+        'cheeks': 'Warm apricot, deep peach, golden coral. Apply on apples of cheeks blending outward.',
+        'lips': 'Spiced pumpkin, warm coral, golden brick red, warm nude. Avoid cool magenta.',
+        'chin_forehead': 'Subtle warm bronzer around temples and perimeter of forehead.',
+        'nails': ['#D2691E', '#CD853F', '#B8860B', '#E9967A', '#8B4513', '#D4A853'],
+        'nail_names': ['Terracotta', 'Peru Gold', 'Harvest Gold', 'Dark Salmon', 'Saddle Brown', 'Warm Amber']
+    },
+    'Soft Autumn': {
+        'foundation': 'Neutral warm ivory or soft warm beige. Avoid heavy yellow or icy pinks.',
+        'eyes': 'Soft taupe, muted bronze, warm sage, soft cocoa. Eyeliner: Soft brown or charcoal brown.',
+        'cheeks': 'Muted rose-gold, soft peach, dusty rose. Apply softly to apple of cheek.',
+        'lips': 'Muted rose, dusty warm pink, soft terracotta. Avoid dark oxblood or neon shades.',
+        'chin_forehead': 'Light neutral translucent powder on T-zone for soft matte finish.',
+        'nails': ['#BC8F8F', '#CD5C5C', '#D2B48C', '#E9967A', '#8B7D6B', '#C59B27'],
+        'nail_names': ['Rosy Brown', 'Muted Crimson', 'Soft Tan', 'Dusty Peach', 'Sage Taupe', 'Muted Gold']
+    },
+    'Deep Winter': {
+        'foundation': 'Cool olive, neutral porcelain, or deep cool espresso. Avoid orange or yellow tones.',
+        'eyes': 'Charcoal black, deep plum, icy silver highlight, midnight navy. Eyeliner: Jet black.',
+        'cheeks': 'Cool deep plum, dark berry, rose red. Apply along cheekbone contour.',
+        'lips': 'True blood red, deep burgundy, dark plum, ruby red. Avoid nude beige or orange.',
+        'chin_forehead': 'Cool contour under jawline and temples for sharp sculpt.',
+        'nails': ['#800000', '#4B0082', '#191970', '#000000', '#8B0045', '#483D8B'],
+        'nail_names': ['Oxblood Ruby', 'Deep Indigo', 'Midnight Navy', 'Jet Black', 'Plum Crimson', 'Dark Slate']
+    },
+    'Cool Winter': {
+        'foundation': 'Cool rose porcelain or cool neutral beige. Avoid golden peach or orange.',
+        'eyes': 'Cool slate grey, icy violet, royal navy, silver shimmer. Eyeliner: Black or navy.',
+        'cheeks': 'Cool raspberry, icy pink, cool fuchsia blush.',
+        'lips': 'Cool fuchsia, true crimson, cherry red, cool raspberry. Avoid warm coral or copper.',
+        'chin_forehead': 'Cool translucent setting powder across T-zone.',
+        'nails': ['#DC143C', '#C71585', '#00008B', '#8A2BE2', '#4169E1', '#800080'],
+        'nail_names': ['Crimson Red', 'Deep Fuchsia', 'Dark Blue', 'Blue Violet', 'Royal Blue', 'Deep Purple']
+    },
+    'Clear Winter': {
+        'foundation': 'Clear cool alabaster, neutral beige, or dark neutral brown. Avoid muddy bronze.',
+        'eyes': 'Clear icy white shimmer, jet black liner, sapphire blue, jewel purple. Eyeliner: Precision jet black.',
+        'cheeks': 'Vibrant cool pink, bright raspberry, clear rose.',
+        'lips': 'Vibrant electric crimson, clear ruby red, bright fuchsia. Avoid muted nude tones.',
+        'chin_forehead': 'Highlighter on brow bone, bridge of nose, and cupid bow for high contrast brilliance.',
+        'nails': ['#FF007F', '#FF0000', '#4169E1', '#9400D3', '#000000', '#E0115F'],
+        'nail_names': ['Electric Pink', 'Vibrant Ruby', 'Sapphire Blue', 'Dark Violet', 'Pure Onyx', 'Ruby Red']
+    },
+    'Light Spring': {
+        'foundation': 'Light warm ivory, fair golden peach. Avoid dark bronzers or heavy grey foundation.',
+        'eyes': 'Soft champagne shimmer, peach shimmer, soft warm brown, golden beige. Eyeliner: Soft brown.',
+        'cheeks': 'Light peach, bright warm pink, soft coral blush.',
+        'lips': 'Peach gloss, warm coral pink, light apricot. Avoid dark berry or black.',
+        'chin_forehead': 'Light golden highlight on cheekbones and forehead center.',
+        'nails': ['#FF7F50', '#FFB6C1', '#FFE4B5', '#FA8072', '#F08080', '#FFD700'],
+        'nail_names': ['Coral Pink', 'Light Pink', 'Moccasin Peach', 'Salmon', 'Light Coral', 'Soft Gold']
+    },
+    'Warm Spring': {
+        'foundation': 'Golden ivory, warm peach beige. Avoid cool pink or blue undertones.',
+        'eyes': 'Warm copper, bright gold, turquoise shimmer, warm brown. Eyeliner: Dark warm brown or bronze.',
+        'cheeks': 'Bright warm coral, peach gold, warm apricot blush.',
+        'lips': 'Warm poppy red, bright coral, golden orange-red. Avoid cool magenta.',
+        'chin_forehead': 'Warm golden bronzer across cheeks and forehead contour.',
+        'nails': ['#FF4500', '#FF7F50', '#FFD700', '#40E0D0', '#E9967A', '#FF6347'],
+        'nail_names': ['Poppy Red', 'Bright Coral', 'Sun Gold', 'Turquoise Blue', 'Dark Salmon', 'Tomato Red']
+    },
+    'Clear Spring': {
+        'foundation': 'Clear warm ivory, porcelain peach. Avoid muddy gray or muted tan.',
+        'eyes': 'Sparkling gold, bright peach, bright emerald green, warm brown. Eyeliner: Espresso black.',
+        'cheeks': 'Clear bright coral, warm fuchsia-pink, bright peach.',
+        'lips': 'Bright coral red, clear poppy, bright warm pink. Avoid muted dust pink.',
+        'chin_forehead': 'Highlighter on cheekbones, brow arch, and chin tip.',
+        'nails': ['#FF1493', '#FF4500', '#50C878', '#FFD700', '#E0115F', '#FF7F50'],
+        'nail_names': ['Deep Bright Pink', 'Orange Red', 'Emerald Green', 'Bright Gold', 'Ruby Pink', 'Bright Coral']
+    },
+    'Light Summer': {
+        'foundation': 'Fair cool porcelain, soft neutral pink-beige. Avoid warm yellow or orange.',
+        'eyes': 'Soft lavendar, icy blue, soft mauve, cool taupe. Eyeliner: Soft slate grey.',
+        'cheeks': 'Soft cool pink, light rose, dusty pink blush.',
+        'lips': 'Soft rose, light berry, cool pink gloss. Avoid dark brown or warm orange.',
+        'chin_forehead': 'Icy pearl highlighter on cheeks and brow arch.',
+        'nails': ['#FFB6C1', '#D8BFD8', '#B0E0E6', '#E6E6FA', '#DB7093', '#C0C0C0'],
+        'nail_names': ['Soft Rose', 'Thistle Lavender', 'Powder Blue', 'Lavender', 'Pale Violet', 'Cool Silver']
+    },
+    'Cool Summer': {
+        'foundation': 'Cool pink porcelain or cool neutral beige. Avoid golden peach or warm bronzer.',
+        'eyes': 'Cool slate grey, plum taupe, icy mauve, cool navy. Eyeliner: Dark slate or navy.',
+        'cheeks': 'Cool berry pink, dusty rose, cool magenta blush.',
+        'lips': 'Cool raspberry, muted cranberry, rose wine. Avoid orange brick.',
+        'chin_forehead': 'Cool translucent powder across forehead and chin.',
+        'nails': ['#C71585', '#DB7093', '#4682B4', '#8B008B', '#D8BFD8', '#708090'],
+        'nail_names': ['Medium Violet', 'Pale Violet', 'Steel Blue', 'Dark Magenta', 'Thistle Pink', 'Slate Grey']
+    },
+    'Soft Summer': {
+        'foundation': 'Neutral cool beige or soft rose ivory. Avoid yellow gold or jet black.',
+        'eyes': 'Muted plum, soft charcoal, grey-brown, dusty mauve. Eyeliner: Soft charcoal grey.',
+        'cheeks': 'Muted dusty rose, soft cool plum, antique pink blush.',
+        'lips': 'Dusty rose, soft berry, muted plum. Avoid bright poppy or orange.',
+        'chin_forehead': 'Soft neutral matte powder on T-zone.',
+        'nails': ['#BC8F8F', '#DB7093', '#8FBC8F', '#9370DB', '#708090', '#B22222'],
+        'nail_names': ['Rosy Brown', 'Dusty Rose', 'Dark Sea Green', 'Medium Purple', 'Slate Grey', 'Muted Crimson']
+    }
+}
