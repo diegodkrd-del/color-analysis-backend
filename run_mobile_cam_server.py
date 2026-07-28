@@ -135,6 +135,30 @@ class MobileCamHandler(BaseHTTPRequestHandler):
             else:
                 self.send_response(404)
                 self.end_headers()
+        elif parsed.path == '/download_swatch_fan':
+            out_dir = r"C:\Users\dkven\Desktop\CHROMATYPE_Reports"
+            os.makedirs(out_dir, exist_ok=True)
+            fan_pdf_path = os.path.join(out_dir, "CHROMATYPE_PrintReady_12Seasons_Pocket_Fan.pdf")
+
+            if not os.path.exists(fan_pdf_path):
+                import subprocess
+                try:
+                    subprocess.run(['python', r'C:\Users\dkven\color_analysis_backend\generate_pocket_fan.py'], check=True)
+                except Exception:
+                    pass
+
+            if os.path.exists(fan_pdf_path):
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/pdf')
+                self.send_header('Content-Disposition', 'attachment; filename="CHROMATYPE_PrintReady_Pocket_Swatch_Fan.pdf"')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                with open(fan_pdf_path, 'rb') as f:
+                    self.wfile.write(f.read())
+            else:
+                self.send_response(404)
+                self.end_headers()
+
         else:
             self.send_response(404)
             self.end_headers()
