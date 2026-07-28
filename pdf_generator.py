@@ -408,25 +408,27 @@ def crop_and_isolate_hairfree_face(image_path: str) -> str:
             fx, fy, fw, fh = faces[0]
 
         # Crop face excluding top hair line and background
-        crop_top = max(0, int(fy + fh * 0.06))         # Cuts off top hair
-        crop_bottom = min(cv_img.shape[0], int(fy + fh * 1.08)) # Chin bounds
-        crop_left = max(0, int(fx - fw * 0.05))
-        crop_right = min(cv_img.shape[1], int(fx + fw * 1.05))
+        crop_top = max(0, int(fy + fh * 0.08))         # Cuts off top hair
+        crop_bottom = min(cv_img.shape[0], int(fy + fh * 1.05)) # Chin bounds
+        crop_left = max(0, int(fx + fw * 0.02))        # Cuts off side hair
+        crop_right = min(cv_img.shape[1], int(fx + fw * 0.98))
 
         cropped = cv_img[crop_top:crop_bottom, crop_left:crop_right]
         ch, cw = cropped.shape[:2]
 
-        # Create smooth hair-free oval mask
+        # Convert any white or near-white background pixels to transparent (zero white padding)
+        rgb_part = cropped[:, :, :3]
+        white_mask = (rgb_part[:, :, 0] > 240) & (rgb_part[:, :, 1] > 240) & (rgb_part[:, :, 2] > 240)
+
+        # Create smooth hair-free face skin oval mask
         mask = np.zeros((ch, cw), dtype=np.uint8)
         center = (cw // 2, int(ch * 0.48))
-        axes = (int(cw * 0.43), int(ch * 0.46))
+        axes = (int(cw * 0.46), int(ch * 0.48))
         cv2.ellipse(mask, center, axes, 0, 0, 360, 255, -1)
 
-        # Soft feathered mask edge
-        mask = cv2.GaussianBlur(mask, (13, 13), 0)
-
-        # Apply transparency alpha channel
+        # Apply mask and eliminate white background pixels completely
         cropped[:, :, 3] = cv2.bitwise_and(cropped[:, :, 3], mask)
+        cropped[white_mask, 3] = 0
 
         out_dir = os.path.dirname(os.path.abspath(image_path))
         face_only_path = os.path.join(out_dir, '_hairfree_face_' + os.path.basename(image_path))
@@ -434,6 +436,7 @@ def crop_and_isolate_hairfree_face(image_path: str) -> str:
             face_only_path += '.png'
         cv2.imwrite(face_only_path, cropped)
         return face_only_path
+
     except Exception as e:
         return image_path
 
