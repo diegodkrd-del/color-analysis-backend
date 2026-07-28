@@ -376,64 +376,50 @@ def ensure_upright_image(image_path: str) -> str:
 
 def generate_draped_person_image(image_path: str, hex_color: str) -> str:
     """
-    Drapes silk color ONLY below cheeks and chin (over neck/shoulders)
-    while keeping full original head, hair, eyes, and background 100% intact.
+    Shows full head, face, eyes, nose, mouth, chin, AND neck of the client,
+    while placing the silk drape color in the background BEHIND the person.
     """
     if not os.path.exists(image_path):
         return image_path
     try:
-        cv_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
-        if cv_img is None: return image_path
+        from background_remover import remove_background
+        
+        out_dir = os.path.dirname(os.path.abspath(image_path))
+        temp_cutout = os.path.join(out_dir, f'_person_cutout_{os.path.basename(image_path)}')
+        if not temp_cutout.lower().endswith('.png'):
+            temp_cutout += '.png'
+            
+        remove_background(image_path, temp_cutout)
+        
+        person_img = cv2.imread(temp_cutout if os.path.exists(temp_cutout) else image_path, cv2.IMREAD_UNCHANGED)
+        if person_img is None: return image_path
 
-        h, w = cv_img.shape[:2]
+        h, w = person_img.shape[:2]
 
         # Convert hex color to BGR
         hex_clean = hex_color.lstrip('#')
         r, g, b = tuple(int(hex_clean[i:i+2], 16) for i in (0, 2, 4))
-        drape_bgr = (b, g, r)
+        
+        # Solid silk drape color background
+        background = np.full((h, w, 3), (b, g, r), dtype=np.uint8)
 
-        _CASCADE_DIR = cv2.data.haarcascades
-        _FACE_CASCADE = cv2.CascadeClassifier(_CASCADE_DIR + 'haarcascade_frontalface_default.xml')
-        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-        gray_eq = cv2.equalizeHist(gray)
-        faces = _FACE_CASCADE.detectMultiScale(gray_eq, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
-
-        if len(faces) > 0:
-            faces = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)
-            fx, fy, fw, fh = faces[0]
-            chin_y = int(fy + fh * 0.82)
-            neck_center_x = int(fx + fw * 0.5)
+        # Composite person (face, mouth, chin, neck) ON TOP of background drape color
+        if person_img.shape[2] == 4:
+            alpha = person_img[:, :, 3] / 255.0
+            alpha_3d = np.dstack([alpha, alpha, alpha])
+            person_rgb = person_img[:, :, :3]
+            composite = (person_rgb * alpha_3d + background * (1.0 - alpha_3d)).astype(np.uint8)
         else:
-            chin_y = int(h * 0.65)
-            neck_center_x = int(w * 0.5)
+            composite = person_img[:, :, :3]
 
-        # Create drape mask: 0 above chin, 255 below chin over shoulders
-        mask = np.zeros((h, w), dtype=np.float32)
-
-        for y in range(h):
-            if y < chin_y:
-                continue
-            # Smooth feathered transition from chin down
-            alpha = min(1.0, (y - chin_y) / (fh * 0.15 + 1.0))
-            mask[y, :] = alpha
-
-        mask = cv2.GaussianBlur(mask, (21, 21), 0)
-        mask_3d = np.dstack([mask, mask, mask])
-
-        # Create solid drape color image
-        color_layer = np.full((h, w, 3), drape_bgr, dtype=np.uint8)
-
-        # Blend drape color below chin onto original photo
-        composite = (cv_img.astype(np.float32) * (1.0 - mask_3d) + color_layer.astype(np.float32) * mask_3d).astype(np.uint8)
-
-        out_dir = os.path.dirname(os.path.abspath(image_path))
-        draped_path = os.path.join(out_dir, f'_draped_{hex_clean}_' + os.path.basename(image_path))
+        draped_path = os.path.join(out_dir, f'_draped_bg_{hex_clean}_' + os.path.basename(image_path))
         if not draped_path.lower().endswith('.png'):
             draped_path += '.png'
         cv2.imwrite(draped_path, composite)
         return draped_path
     except Exception as e:
         return image_path
+
 
 
 
