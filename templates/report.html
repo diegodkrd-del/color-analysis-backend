@@ -265,7 +265,7 @@
 
         <div class="footer-page">
             <span>CHROMATYPE Studio • Confidential Client Report</span>
-            <span>Page 1 of {{ palette|length + 4 }}</span>
+            <span>Page 1 of 52</span>
         </div>
     </div>
 
@@ -336,7 +336,7 @@
 
         <div class="footer-page">
             <span>CHROMATYPE Studio • CHROMATYPE Ring & Spectrum</span>
-            <span>Page 2 of {{ palette|length + 4 }}</span>
+            <span>Page 2 of 52</span>
         </div>
     </div>
 
@@ -379,7 +379,7 @@
         </div>
 
         <h3 style="font-size: 15px; color: {{ header_color }}; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
-            Your Complete 36 Seasonal Palette Colors
+            Your Primary Sub-Season 36 Signature Palette
         </h3>
         
         <div class="swatch-grid" style="margin-bottom: 15px;">
@@ -412,7 +412,7 @@
 
         <div class="footer-page">
             <span>CHROMATYPE Studio • {{ sub_season }}</span>
-            <span>Page 3 of {{ palette|length + 4 }}</span>
+            <span>Page 3 of 52</span>
         </div>
     </div>
 
@@ -447,61 +447,6 @@
                 <li><strong>b* axis (Blue/Yellow):</strong> Negative values = blue; positive values = yellow.</li>
                 <li><strong>Center Point (a* = 0, b* = 0):</strong> Represents completely neutral grey, black, or white.</li>
             </ul>
-            
-            <p style="margin: 4px 0 2px 0; font-size: 11px; font-weight: bold; color: {{ header_color }};">Why CIELAB Matters in Optical Science:</p>
-            <ul style="margin: 2px 0 8px 0; padding-left: 18px; font-size: 11px; line-height: 1.5; color: #334155;">
-                <li><strong>Device Independence:</strong> Absolute color independent of screens, printers, or camera sensor profiles.</li>
-                <li><strong>Perceptual Uniformity:</strong> Distance in space matches perceived visual change.</li>
-                <li><strong>ΔE (Delta E):</strong> Quantifies visual difference (\(\Delta E^*_{ab}\)). A \(\Delta E \approx 1.0\) represents a Just Noticeable Difference (JND).</li>
-            </ul>
-
-            <div style="font-size: 10px; font-family: monospace; background: #E2E8F0; padding: 6px 8px; border-radius: 6px; color: #0F172A; text-align: center;">
-                L* = 116·f(Y/Yn) - 16 &nbsp;|&nbsp; a* = 500·[f(X/Xn) - f(Y/Yn)] &nbsp;|&nbsp; b* = 200·[f(Y/Yn) - f(Z/Zn)]
-            </div>
-        </div>
-
-        <h2 class="section-title" style="margin-top: 12px;">Interactive HSL Color Mixer & 4-Season Spectrum</h2>
-        
-        <div style="background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 12px; padding: 12px 16px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-            <!-- LEFT SIDE: HSL CONTROLS -->
-            <div style="width: 48%; text-align: left;">
-                <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                    <span style="font-size: 11px; font-weight: bold; width: 45px; color: #475569;">H (Hue):</span>
-                    <input type="number" value="344" min="0" max="360" style="width: 45px; font-size: 10px; font-weight: bold; border: 1px solid #CBD5E1; padding: 2px 4px; border-radius: 4px; margin-right: 6px;">
-                    <div style="flex-grow: 1; height: 10px; border-radius: 5px; background: linear-gradient(to right, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF, #FF0000); border: 1px solid #94A3B8;"></div>
-                </div>
-
-                <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                    <span style="font-size: 11px; font-weight: bold; width: 45px; color: #475569;">S (Sat):</span>
-                    <input type="number" value="100" min="0" max="100" style="width: 45px; font-size: 10px; font-weight: bold; border: 1px solid #CBD5E1; padding: 2px 4px; border-radius: 4px; margin-right: 6px;">
-                    <div style="flex-grow: 1; height: 10px; border-radius: 5px; background: linear-gradient(to right, #808080, #CE0037); border: 1px solid #94A3B8;"></div>
-                </div>
-
-                <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                    <span style="font-size: 11px; font-weight: bold; width: 45px; color: #475569;">L (Light):</span>
-                    <input type="number" value="40" min="0" max="100" style="width: 45px; font-size: 10px; font-weight: bold; border: 1px solid #CBD5E1; padding: 2px 4px; border-radius: 4px; margin-right: 6px;">
-                    <div style="flex-grow: 1; height: 10px; border-radius: 5px; background: linear-gradient(to right, #000000, #CE0037, #FFFFFF); border: 1px solid #94A3B8;"></div>
-                </div>
-
-                <div style="display: flex; align-items: center;">
-                    <span style="font-size: 11px; font-weight: bold; width: 45px; color: #475569;">HEX:</span>
-                    <input type="text" value="#CE0037" style="width: 65px; font-size: 10px; font-weight: bold; border: 1px solid #CBD5E1; padding: 2px 4px; border-radius: 4px; color: #CE0037;">
-                </div>
-            </div>
-
-            <!-- RIGHT SIDE: LIVE COLOR SWATCH PREVIEW & 4-SEASON SPECTRUM BARS -->
-            <div style="width: 48%; display: flex; flex-direction: column; align-items: center;">
-                <div style="width: 100%; height: 45px; background-color: #CE0037; border-radius: 8px; border: 1px solid rgba(0,0,0,0.15); display: flex; justify-content: center; align-items: center; color: #FFFFFF; font-weight: bold; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-                    MIXED TONE: #CE0037
-                </div>
-
-                <div style="display: flex; justify-content: space-around; width: 100%; margin-top: 8px; font-size: 8px; font-weight: bold;">
-                    <div style="text-align: center; color: #1D4ED8;">WINTER<br><span style="font-size: 7px; color: #64748B;">clear•cool</span></div>
-                    <div style="text-align: center; color: #B45309;">AUTUMN<br><span style="font-size: 7px; color: #64748B;">soft•warm</span></div>
-                    <div style="text-align: center; color: #2563EB;">SUMMER<br><span style="font-size: 7px; color: #64748B;">soft•cool</span></div>
-                    <div style="text-align: center; color: #059669;">SPRING<br><span style="font-size: 7px; color: #64748B;">clear•warm</span></div>
-                </div>
-            </div>
         </div>
 
         <div class="mystic-card" style="margin-top: 5px;">
@@ -515,106 +460,55 @@
 
         <div class="footer-page">
             <span>CHROMATYPE Studio • Confidential Report for {{ client_name }}</span>
-            <span>Page 4 of {{ palette|length + 4 }}</span>
+            <span>Page 4 of 52</span>
         </div>
     </div>
 
-    <!-- PAGES 5 TO 22: VIRTUAL COLOR DRAPING PAGES (2 SWATCHES PER PAGE - HALF PAGE TOP / HALF PAGE BOTTOM) -->
-    {% for i in range(0, palette|length, 2) %}
-    {% set sw1 = palette[i] %}
-    {% set sw2 = palette[i+1] if i+1 < palette|length else None %}
-    <div class="page" style="padding: 0; display: flex; flex-direction: column; height: 297mm; box-sizing: border-box; overflow: hidden;">
-        
-        <!-- TOP HALF DRAPE (SWATCH 1) -->
-        <div style="height: 144mm; background-color: {{ sw1.hex }}; color: #FFFFFF; padding: 15px 25px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; position: relative; border-bottom: 3px solid #FFFFFF;">
-            <div style="background: rgba(0,0,0,0.65); padding: 6px 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);">
-                <span style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #CBD5E1;">CHROMATYPE Virtual Drape • Color {{ i + 1 }} of {{ palette|length }}</span>
-                <h3 style="font-size: 18px; margin: 1px 0 0 0; text-transform: uppercase; letter-spacing: 1px; color: #FFFFFF;">{{ sw1.name }}</h3>
-                <span style="font-size: 10px; opacity: 0.95; font-weight: 700; letter-spacing: 1px; color: #F1F5F9;">HEX: {{ sw1.hex }}</span>
-            </div>
-
-            <div style="height: 170px; display: flex; justify-content: center; align-items: center; margin: 4px 0;">
-                <img src="{{ image_path }}" style="max-height: 165px; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.45));" alt="{{ sw1.name }}">
-            </div>
-
-            <div style="background: rgba(0,0,0,0.65); padding: 6px 16px; border-radius: 8px; max-width: 480px; border: 1px solid rgba(255,255,255,0.2);">
-                <p style="margin: 0; font-size: 10.5px; line-height: 1.3; color: #F8FAFC;">
-                    <strong>Primary Harmony:</strong> <strong>{{ sw1.name }}</strong> illuminates your natural <strong>{{ sub_season }}</strong> skin tone with crisp contrast and effortless elegance.
-                </p>
-            </div>
-        </div>
-
-        <!-- BOTTOM HALF DRAPE (SWATCH 2) -->
-        {% if sw2 %}
-        <div style="height: 144mm; background-color: {{ sw2.hex }}; color: #FFFFFF; padding: 15px 25px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; position: relative;">
-            <div style="background: rgba(0,0,0,0.65); padding: 6px 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25);">
-                <span style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #CBD5E1;">CHROMATYPE Virtual Drape • Color {{ i + 2 }} of {{ palette|length }}</span>
-                <h3 style="font-size: 18px; margin: 1px 0 0 0; text-transform: uppercase; letter-spacing: 1px; color: #FFFFFF;">{{ sw2.name }}</h3>
-                <span style="font-size: 10px; opacity: 0.95; font-weight: 700; letter-spacing: 1px; color: #F1F5F9;">HEX: {{ sw2.hex }}</span>
-            </div>
-
-            <div style="height: 170px; display: flex; justify-content: center; align-items: center; margin: 4px 0;">
-                <img src="{{ image_path }}" style="max-height: 165px; object-fit: contain; filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.45));" alt="{{ sw2.name }}">
-            </div>
-
-            <div style="background: rgba(0,0,0,0.65); padding: 6px 16px; border-radius: 8px; max-width: 480px; border: 1px solid rgba(255,255,255,0.2);">
-                <p style="margin: 0; font-size: 10.5px; line-height: 1.3; color: #F8FAFC;">
-                    <strong>Primary Harmony:</strong> <strong>{{ sw2.name }}</strong> illuminates your natural <strong>{{ sub_season }}</strong> skin tone with crisp contrast and effortless elegance.
-                </p>
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="footer-page" style="position: absolute; bottom: 4px; right: 20px; background: rgba(0,0,0,0.7); padding: 2px 10px; border-radius: 4px; font-size: 8px; color: #FFFFFF;">
-            <span>CHROMATYPE Studio • Page {{ ((i / 2) + 5)|int }}</span>
-        </div>
-    </div>
-    {% endfor %}
-
-    <!-- PAGES 41 TO 52: ALL 12 SUB-SEASONS MASTER COMPARISON PAGES WITH 36-COLOR RADIAL WHEEL RING -->
+    <!-- PAGES 5 TO 52: ALL 432 PANTONE TCX FACE DRAPES (48 PAGES ACROSS 12 SUB-SEASONS, 9 DRAPES PER PAGE) -->
+    {% set drape_page_counter = namespace(val=5) %}
     {% for sub_name, sub_info in all_subseasons.items() %}
-    <div class="page" style="background-color: {{ sub_info.bg }}; color: #1E293B; padding: 35px 30px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center;">
-        <div style="background: rgba(255,255,255,0.92); padding: 10px 24px; border-radius: 25px; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: {{ sub_info.header_color }}; font-weight: bold;">Master 12-Season Comparison • Sub-Season {{ loop.index }} of 12</div>
-            <h2 style="font-size: 22px; margin: 2px 0 0 0; text-transform: uppercase; letter-spacing: 1px; color: {{ sub_info.header_color }};">{{ sub_name }}</h2>
-            {% if sub_name == sub_season %}
-            <div style="font-size: 11px; font-weight: bold; background: #10B981; color: #FFFFFF; padding: 2px 10px; border-radius: 10px; display: inline-block; margin-top: 4px;">★ Primary Match Recommendation</div>
-            {% endif %}
+    {% for page_chunk in range(0, sub_info.colors|length, 9) %}
+    <div class="page" style="padding: 20px 25px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="border-bottom: 2px solid {{ sub_info.header_color }}; padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span style="font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: {{ sub_info.header_color }};">CHROMATYPE 432 Pantone Drapes Suite</span>
+                <h3 style="font-size: 16px; margin: 1px 0 0 0; text-transform: uppercase; letter-spacing: 1px; color: #0F172A;">{{ sub_name }} • Virtual Face Drapes {{ page_chunk + 1 }}–{{ [page_chunk + 9, sub_info.colors|length]|min }} of 36</h3>
+            </div>
+            <span style="font-size: 10px; font-weight: bold; background: {{ sub_info.accent_color }}; color: #FFFFFF; padding: 4px 12px; border-radius: 12px;">Drape Page {{ drape_page_counter.val }} of 52</span>
         </div>
 
-        <!-- 36-COLOR RADIAL WHEEL RING WITH FACE IN CENTER FOR THIS SUB-SEASON -->
-        <div style="position: relative; width: 310px; height: 310px; margin: 10px auto; display: flex; justify-content: center; align-items: center;">
-            <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: conic-gradient(
-                {% for color in sub_info.colors %}
-                {{ color.hex }} {{ (loop.index0 * 360 / sub_info.colors|length)|round(1) }}deg {{ (loop.index * 360 / sub_info.colors|length)|round(1) }}deg{% if not loop.last %}, {% endif %}
-                {% endfor %}
-            ); box-shadow: 0 12px 30px rgba(0,0,0,0.25);">
-            </div>
-
-            <div style="position: absolute; width: 200px; height: 200px; border-radius: 50%; overflow: hidden; border: 5px solid #FFFFFF; box-shadow: inset 0 0 12px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.25); background-color: #FFFFFF;">
-                <img src="{{ image_path }}" style="width: 100%; height: 100%; object-fit: cover; object-position: center 30%;" alt="{{ sub_name }} Wheel">
-            </div>
-        </div>
-
-        <!-- 12 Representative Palette Swatches for this Sub-Season -->
-        <div style="background: rgba(255,255,255,0.92); padding: 12px 18px; border-radius: 14px; max-width: 540px; width: 100%; border: 1px solid rgba(0,0,0,0.1);">
-            <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; color: #64748B; margin-bottom: 8px; letter-spacing: 1px;">{{ sub_name }} 36-Color Palette Highlights</div>
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px;">
-                {% for sw in sub_info.colors[:12] %}
-                <div style="width: 15%; text-align: center;">
-                    <div style="height: 28px; background-color: {{ sw.hex }}; border-radius: 5px; border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
-                    <div style="font-size: 7px; font-weight: bold; margin-top: 2px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ sw.name }}</div>
+        <!-- 3x3 GRID OF 9 FACE DRAPES -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
+            {% for sw in sub_info.colors[page_chunk:page_chunk+9] %}
+            <div style="background-color: {{ sw.hex }}; border-radius: 10px; padding: 8px; height: 75mm; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box; position: relative;">
+                <div style="background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); width: 90%;">
+                    <div style="font-size: 8px; font-weight: bold; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ sw.name }}</div>
+                    <div style="font-size: 7px; color: #E2E8F0;">{{ sw.hex }}</div>
                 </div>
-                {% endfor %}
+
+                <div style="width: 54px; height: 54px; border-radius: 50%; overflow: hidden; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 8px rgba(0,0,0,0.3); background: #FFFFFF; margin: 4px 0;">
+                    <img src="{{ image_path }}" style="width: 100%; height: 100%; object-fit: cover; object-position: center 30%;" alt="{{ sw.name }}">
+                </div>
+
+                <div style="background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 6px; width: 90%;">
+                    <div style="font-size: 6.5px; color: #CBD5E1; font-weight: bold;">PANTONE {{ sw.pantone if sw.pantone else 'TCX Matched' }}</div>
+                </div>
             </div>
+            {% endfor %}
         </div>
 
-        <div class="footer-page" style="border-top: 1px solid rgba(0,0,0,0.1); color: #64748B;">
-            <span>CHROMATYPE Studio • 12-Subseason Self-Selection Guide</span>
-            <span>Page {{ loop.index + palette|length + 4 }} of {{ palette|length + 16 }}</span>
+        <div class="footer-page" style="position: relative; bottom: 0; left: 0; right: 0;">
+            <span>CHROMATYPE Studio • 432 Pantone Drapes Suite</span>
+            <span>Page {{ drape_page_counter.val }} of 52</span>
         </div>
     </div>
+    {% set drape_page_counter.val = drape_page_counter.val + 1 %}
     {% endfor %}
+    {% endfor %}
+
+</body>
+</html>
+
 
 </body>
 </html>

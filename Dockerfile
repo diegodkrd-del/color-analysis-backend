@@ -4,10 +4,12 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PORT=10000
 
-# Install system dependencies for WeasyPrint and OpenCV
+# Install system dependencies for Chromium PDF rendering, WeasyPrint, and OpenCV
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
+    chromium \
+    chromium-driver \
     libcairo2 \
     libpango-1.0-0 \
     libpangoft2-1.0-0 \

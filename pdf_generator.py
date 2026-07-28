@@ -456,11 +456,16 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
         all_subseasons=SUBSEASON_PALETTES
     )
     
-    edge_path = r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
-    if not os.path.exists(edge_path):
-        edge_path = r'C:\Program Files\Microsoft\Edge\Application\msedge.exe'
+    chrome_paths = [
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/google-chrome',
+        r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
+        r'C:\Program Files\Microsoft\Edge\Application\msedge.exe'
+    ]
+    browser_path = next((p for p in chrome_paths if os.path.exists(p)), None)
         
-    if os.path.exists(edge_path):
+    if browser_path:
         try:
             temp_html = output_pdf_path.replace('.pdf', '_temp.html')
             with open(temp_html, 'w', encoding='utf-8') as f:
@@ -468,26 +473,30 @@ def generate_pdf(image_path: str, analysis_data: dict, output_pdf_path: str, cli
                 
             html_url = 'file:///' + os.path.abspath(temp_html).replace('\\', '/')
             cmd = [
-                edge_path,
+                browser_path,
                 '--headless=new',
                 f'--print-to-pdf={output_pdf_path}',
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-gpu',
                 '--no-pdf-header-footer',
                 '--print-to-pdf-no-header',
                 html_url
             ]
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=45)
             if os.path.exists(temp_html):
                 try: os.remove(temp_html)
                 except: pass
                 
             if os.path.exists(output_pdf_path) and os.path.getsize(output_pdf_path) > 1000:
-                print(f'Generated pixel-perfect PDF via Headless Edge: {output_pdf_path}')
+                print(f'Generated pixel-perfect PDF via Headless Browser ({browser_path}): {output_pdf_path}')
                 if image_path and os.path.exists(image_path) and '_bg_cutout' in image_path:
                     try: os.remove(image_path)
                     except: pass
                 return output_pdf_path
         except Exception as edge_err:
             pass
+
 
     try:
         from weasyprint import HTML
